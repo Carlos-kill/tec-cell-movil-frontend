@@ -1,0 +1,224 @@
+<div>
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-slate-800">Envíos Externos</h1>
+    <button
+      (click)="abrirPanel()"
+      class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+    >
+      + Nuevo Envío
+    </button>
+  </div>
+
+  <div class="mb-4">
+    <input
+      type="text"
+      [(ngModel)]="textoBusqueda"
+      placeholder="Buscar por técnico externo o código de orden..."
+      class="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    @if (cargando()) {
+      <p class="p-6 text-slate-500 text-sm">Cargando...</p>
+    } @else if (enviosFiltrados.length === 0) {
+      <p class="p-6 text-slate-500 text-sm">No hay envíos registrados.</p>
+    } @else {
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+          <tr>
+            <th class="px-4 py-3">Orden</th>
+            <th class="px-4 py-3">Técnico externo</th>
+            <th class="px-4 py-3">Fecha envío</th>
+            <th class="px-4 py-3">Fecha retorno</th>
+            <th class="px-4 py-3">Costo</th>
+            <th class="px-4 py-3">Estado</th>
+            <th class="px-4 py-3"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (envio of enviosFiltrados; track envio.id) {
+            <tr class="border-t border-slate-100 hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium text-blue-600">{{ envio.orden?.codigoUnico }}</td>
+              <td class="px-4 py-3">
+                <p>{{ envio.tecnicoExternoNombre }}</p>
+                <p class="text-xs text-slate-400">{{ envio.tecnicoExternoContacto }}</p>
+              </td>
+              <td class="px-4 py-3 text-slate-500">{{ envio.fechaEnvio | slice:0:16 }}</td>
+              <td class="px-4 py-3 text-slate-500">{{ envio.fechaRetornoReal ? (envio.fechaRetornoReal | slice:0:16) : '—' }}</td>
+              <td class="px-4 py-3">S/ {{ envio.costoReal ?? envio.costoEstimado ?? '—' }}</td>
+              <td class="px-4 py-3">
+                <span
+                  class="text-xs font-medium px-2 py-1 rounded-full"
+                  [class.bg-green-100]="envio.fechaRetornoReal"
+                  [class.text-green-700]="envio.fechaRetornoReal"
+                  [class.bg-blue-100]="!envio.fechaRetornoReal"
+                  [class.text-blue-700]="!envio.fechaRetornoReal"
+                >
+                  {{ estadoEnvio(envio) }}
+                </span>
+              </td>
+              <td class="px-4 py-3 whitespace-nowrap">
+                @if (!envio.fechaRetornoReal) {
+                  <button (click)="confirmarLlegada(envio)" class="text-xs text-blue-600 hover:underline mr-3">
+                    Confirmar llegada
+                  </button>
+                  <button (click)="registrarRetorno(envio)" class="text-xs text-blue-600 hover:underline">
+                    Registrar retorno
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <!-- DRAWER lateral -->
+  @if (mostrarPanel()) {
+    <div class="fixed inset-0 bg-black/40 z-40" (click)="cerrarPanel()"></div>
+
+    <div
+      class="fixed top-0 right-0 h-full w-full bg-white shadow-2xl z-50 flex flex-col transition-all duration-300"
+      [class.max-w-md]="!ordenEncontrada()"
+      [class.max-w-4xl]="ordenEncontrada()"
+    >
+      <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800">Nuevo envío externo</h2>
+        <button (click)="cerrarPanel()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto grid grid-cols-1" [class.md:grid-cols-2]="ordenEncontrada()">
+
+        <!-- Columna izquierda: buscar + formulario -->
+        <div class="p-6 border-r border-slate-100">
+
+          <label class="block text-xs font-medium text-slate-600 mb-1">Buscar orden por código</label>
+          <div class="flex gap-2 mb-4">
+            <input
+              type="text"
+              [(ngModel)]="codigoOrden"
+              [ngModelOptions]="{standalone: true}"
+              (keyup.enter)="buscarOrden()"
+              placeholder="OT-2026-00001"
+              class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            />
+            <button
+              (click)="buscarOrden()"
+              [disabled]="buscandoOrden()"
+              class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+            >
+              Buscar
+            </button>
+          </div>
+          @if (errorBusquedaOrden()) {
+            <p class="text-red-600 text-sm mb-3">{{ errorBusquedaOrden() }}</p>
+          }
+
+          <p class="text-xs text-slate-400 mb-2">O selecciona una orden activa reciente:</p>
+          <div class="space-y-1 mb-6 max-h-40 overflow-y-auto">
+            @for (orden of sugerenciasFiltradas; track orden.id) {
+              <button
+                type="button"
+                (click)="previsualizar(orden)"
+                class="w-full text-left px-3 py-2 rounded-lg text-sm border transition"
+                [class.border-blue-400]="ordenEncontrada()?.id === orden.id"
+                [class.bg-blue-50]="ordenEncontrada()?.id === orden.id"
+                [class.border-slate-200]="ordenEncontrada()?.id !== orden.id"
+              >
+                <span class="font-medium text-blue-600">{{ orden.codigoUnico }}</span>
+                <span class="text-slate-500"> — {{ nombreCliente(orden) }}</span>
+              </button>
+            }
+          </div>
+
+          <hr class="mb-6" />
+
+          @if (ordenEncontrada()) {
+            <form [formGroup]="form" class="space-y-3">
+              <input formControlName="tecnicoExternoNombre" placeholder="Nombre del técnico externo *" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input formControlName="tecnicoExternoContacto" placeholder="Contacto" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <div class="grid grid-cols-2 gap-2">
+                <input formControlName="costoEstimado" type="number" placeholder="Costo estimado (S/)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <input formControlName="fechaRetornoEsperada" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              </div>
+              <textarea formControlName="observaciones" placeholder="Observaciones" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea>
+
+              <p class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                ⚠ Al guardar, la orden cambiará automáticamente a "Enviado a tercero".
+              </p>
+
+              @if (errorMensaje()) {
+                <div class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  {{ errorMensaje() }}
+                </div>
+              }
+
+              <button
+                type="button"
+                (click)="registrarEnvio()"
+                [disabled]="form.invalid || guardando()"
+                class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-medium py-2.5 rounded-lg transition"
+              >
+                {{ guardando() ? 'Guardando...' : 'Registrar envío' }}
+              </button>
+            </form>
+          } @else {
+            <p class="text-sm text-slate-400 text-center py-8">Busca o selecciona una orden para continuar.</p>
+          }
+        </div>
+
+        <!-- Columna derecha: vista previa en vivo (solo aparece si hay orden seleccionada) -->
+        @if (ordenEncontrada()) {
+          <div class="p-6 bg-slate-50">
+            <h3 class="text-sm font-semibold text-slate-500 uppercase mb-4">Vista previa</h3>
+
+            <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+              <div>
+                <p class="text-xs text-slate-500">Código de orden</p>
+                <p class="text-xl font-bold text-blue-600">{{ ordenEncontrada()!.codigoUnico }}</p>
+                <span class="inline-block mt-1 bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
+                  {{ ordenEncontrada()!.estadoActual.nombre }}
+                </span>
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Cliente</p>
+                <p class="font-medium text-slate-800">{{ nombreCliente(ordenEncontrada()!) }}</p>
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Equipo</p>
+                <p class="font-medium text-slate-800">
+                  {{ ordenEncontrada()!.equipo.tipoEquipo.nombre }} — {{ ordenEncontrada()!.equipo.marca }} {{ ordenEncontrada()!.equipo.modelo }}
+                </p>
+                @if (ordenEncontrada()!.equipo.numeroSerieImei) {
+                  <p class="text-xs text-slate-500">N° serie/IMEI: {{ ordenEncontrada()!.equipo.numeroSerieImei }}</p>
+                }
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Falla reportada</p>
+                <p class="text-sm text-slate-700">{{ ordenEncontrada()!.equipo.fallaReportada }}</p>
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Técnico asignado</p>
+                <p class="text-sm text-slate-700">
+                  {{ ordenEncontrada()!.tecnicoAsignado.persona.nombre }} {{ ordenEncontrada()!.tecnicoAsignado.persona.apellidoPaterno }}
+                </p>
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Fecha de ingreso</p>
+                <p class="text-sm text-slate-700">{{ ordenEncontrada()!.fechaIngreso | slice:0:16 }}</p>
+              </div>
+            </div>
+          </div>
+        }
+
+      </div>
+    </div>
+  }
+</div>

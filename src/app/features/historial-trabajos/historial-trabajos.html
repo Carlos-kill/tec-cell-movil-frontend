@@ -1,0 +1,51 @@
+<div>
+  <h1 class="text-2xl font-bold text-slate-800 mb-1">Historial de Trabajos</h1>
+  <p class="text-slate-500 text-sm mb-6">Órdenes ya entregadas al cliente</p>
+
+  <div class="mb-4">
+    <input
+      type="text"
+      [(ngModel)]="textoBusqueda"
+      placeholder="Buscar por código, cliente o técnico..."
+      class="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    @if (cargando()) {
+      <p class="p-6 text-slate-500 text-sm">Cargando...</p>
+    } @else if (ordenesFiltradas.length === 0) {
+      <p class="p-6 text-slate-500 text-sm">No hay trabajos entregados todavía.</p>
+    } @else {
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+          <tr>
+            <th class="px-4 py-3">Orden</th>
+            <th class="px-4 py-3">Cliente</th>
+            <th class="px-4 py-3">Equipo</th>
+            <th class="px-4 py-3">Técnico</th>
+            <th class="px-4 py-3">Ingreso</th>
+            <th class="px-4 py-3">Entrega</th>
+            <th class="px-4 py-3">Costo total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (orden of ordenesFiltradas; track orden.id) {
+            <tr
+              class="border-t border-slate-100 hover:bg-slate-50 cursor-pointer"
+              [routerLink]="['/ordenes', orden.id]"
+            >
+              <td class="px-4 py-3 font-medium text-blue-600">{{ orden.codigoUnico }}</td>
+              <td class="px-4 py-3">{{ nombreCliente(orden) }}</td>
+              <td class="px-4 py-3">{{ orden.equipo.tipoEquipo.nombre }} {{ orden.equipo.marca }}</td>
+              <td class="px-4 py-3">{{ nombreTecnico(orden) }}</td>
+              <td class="px-4 py-3 text-slate-500">{{ orden.fechaIngreso | slice:0:10 }}</td>
+              <td class="px-4 py-3 text-slate-500">{{ orden.fechaEntregaReal ? (orden.fechaEntregaReal | slice:0:10) : '—' }}</td>
+              <td class="px-4 py-3">S/ {{ orden.costoTotal }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

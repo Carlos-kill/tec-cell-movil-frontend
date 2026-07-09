@@ -1,0 +1,208 @@
+<div class="max-w-5xl">
+  <h1 class="text-2xl font-bold text-slate-800 mb-1">Registrar Equipo</h1>
+  <p class="text-slate-500 text-sm mb-6">Registro de ingreso de equipo y generación de orden de trabajo</p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Formulario -->
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="lg:col-span-2">
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h2 class="font-semibold text-slate-800 mb-4">👤 Datos del Cliente</h2>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">DNI *</label>
+            <input formControlName="dni" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            @if (buscandoCliente()) {
+              <p class="text-xs text-slate-400 mt-1">Buscando...</p>
+            }
+            @if (clienteExistente() && !buscandoCliente()) {
+              <p class="text-xs text-green-600 mt-1">✓ Cliente existente — datos autocompletados</p>
+            }
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Teléfono</label>
+            <input formControlName="telefonoCliente" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-slate-600 mb-1">Nombre del Cliente *</label>
+          <input formControlName="nombreCliente" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Apellido paterno *</label>
+            <input formControlName="apellidoPaternoCliente" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Apellido materno</label>
+            <input formControlName="apellidoMaternoCliente" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Correo (Opcional)</label>
+            <input formControlName="correoCliente" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Dirección (Opcional)</label>
+            <input formControlName="direccionCliente" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-400 mt-3">
+          Si el DNI ya existe en el sistema, se reutilizan sus datos automáticamente.
+        </p>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h2 class="font-semibold text-slate-800 mb-4">💻 Información del Equipo</h2>
+
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Tipo de Equipo *</label>
+            <select formControlName="tipoEquipoId" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <option [ngValue]="null">Seleccionar tipo</option>
+              @for (tipo of tiposEquipo(); track tipo.id) {
+                <option [ngValue]="tipo.id">{{ tipo.nombre }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Marca</label>
+            <input formControlName="marca" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Modelo</label>
+            <input formControlName="modelo" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">N° de serie / IMEI</label>
+            <input formControlName="numeroSerieImei" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Accesorios entregados (Opcional)</label>
+            <input formControlName="accesoriosEntregados" placeholder="Cargador, funda..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-slate-600 mb-1">Falla Reportada por el Cliente *</label>
+          <textarea formControlName="fallaReportada" rows="3" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-2">Estado físico del equipo al ingreso *</label>
+          <div class="grid grid-cols-4 gap-2 mb-2">
+            @for (opcion of ['Bueno', 'Regular', 'Malo', 'Muy malo']; track opcion) {
+              <button
+                type="button"
+                (click)="seleccionarEstadoFisico(opcion)"
+                class="border rounded-lg px-3 py-2 text-sm text-left transition"
+                [class.border-blue-500]="form.value.estadoFisicoIngreso === opcion"
+                [class.bg-blue-50]="form.value.estadoFisicoIngreso === opcion"
+                [class.border-slate-300]="form.value.estadoFisicoIngreso !== opcion"
+              >
+                {{ opcion }}
+              </button>
+            }
+          </div>
+
+          @if (form.value.estadoFisicoIngreso) {
+            <textarea
+              formControlName="detalleEstadoFisico"
+              rows="2"
+              placeholder="Describe el detalle: rayones, golpes, pantalla rota, etc. (opcional)"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            ></textarea>
+          }
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h2 class="font-semibold text-slate-800 mb-4">Asignación</h2>
+
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-slate-600 mb-1">Técnico Asignado *</label>
+          <select formControlName="tecnicoAsignadoId" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <option [ngValue]="null">Seleccionar técnico</option>
+            @for (tecnico of tecnicos(); track tecnico.id) {
+              <option [ngValue]="tecnico.id">{{ tecnico.persona.nombre }} {{ tecnico.persona.apellidoPaterno }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Observaciones Adicionales (opcional)</label>
+          <textarea formControlName="observaciones" rows="2" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea>
+        </div>
+      </div>
+
+      @if (errorMensaje()) {
+        <div class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">
+          {{ errorMensaje() }}
+        </div>
+      }
+
+      <button
+        type="submit"
+        [disabled]="guardando()"
+        class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-medium px-6 py-2.5 rounded-lg transition"
+      >
+        {{ guardando() ? 'Registrando...' : '✈ Registrar Equipo' }}
+      </button>
+    </form>
+
+    <!-- Vista previa en vivo -->
+    <!-- Vista previa en vivo: solo aparece cuando el usuario empieza a llenar datos -->
+    @if (formTieneAlgoLlenado) {
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-6">
+          <h2 class="font-semibold text-slate-800 mb-4">Orden de Trabajo</h2>
+          <p class="text-xs text-slate-500 mb-1">Código de Orden (provisional)</p>
+          <p class="text-xl font-bold text-blue-600 mb-4">{{ codigoTentativo() || '...' }}</p>
+
+          <div class="space-y-3 text-sm">
+          <div>
+            <p class="text-slate-500">Fecha de Ingreso</p>
+            <p class="font-medium text-slate-800">{{ fechaActual | date:'dd/MM/yyyy h:mm a' }}</p>
+          </div>
+          <div>
+            <p class="text-slate-500">Estado inicial</p>
+            @if (estadoInicial()) {
+              <span class="inline-block bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-full mt-1">
+                {{ estadoInicial()!.nombre }}
+              </span>
+            }
+          </div>
+
+          @if (form.value.nombreCliente) {
+            <div>
+              <p class="text-slate-500">Cliente</p>
+              <p class="font-medium text-slate-800">{{ form.value.nombreCliente }} {{ form.value.apellidoPaternoCliente }}</p>
+            </div>
+          }
+          @if (nombreTipoEquipoSeleccionado) {
+            <div>
+              <p class="text-slate-500">Equipo</p>
+              <p class="font-medium text-slate-800">{{ nombreTipoEquipoSeleccionado }} {{ form.value.marca }} {{ form.value.modelo }}</p>
+            </div>
+          }
+          @if (nombreTecnicoSeleccionado) {
+            <div>
+              <p class="text-slate-500">Técnico asignado</p>
+              <p class="font-medium text-slate-800">{{ nombreTecnicoSeleccionado }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

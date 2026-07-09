@@ -1,0 +1,236 @@
+<div>
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-slate-800">Pedidos de Repuestos</h1>
+    <button
+      (click)="abrirPanel()"
+      class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+    >
+      + Nuevo Pedido
+    </button>
+  </div>
+
+  <div class="mb-4">
+    <input
+      type="text"
+      [(ngModel)]="textoBusqueda"
+      placeholder="Buscar por repuesto, proveedor o código de orden..."
+      class="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    @if (cargando()) {
+      <p class="p-6 text-slate-500 text-sm">Cargando...</p>
+    } @else if (pedidosFiltrados.length === 0) {
+      <p class="p-6 text-slate-500 text-sm">No hay pedidos registrados.</p>
+    } @else {
+      <table class="w-full text-sm">
+        <thead class="bg-slate-50 text-slate-500 text-left">
+          <tr>
+            <th class="px-4 py-3">Orden</th>
+            <th class="px-4 py-3">Repuesto</th>
+            <th class="px-4 py-3">Proveedor</th>
+            <th class="px-4 py-3">Fecha pedido</th>
+            <th class="px-4 py-3">Precio</th>
+            <th class="px-4 py-3">Llegada</th>
+            <th class="px-4 py-3">Instalado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (pedido of pedidosFiltrados; track pedido.id) {
+            <tr class="border-t border-slate-100 hover:bg-slate-50">
+              <td class="px-4 py-3 font-medium text-blue-600">{{ pedido.orden?.codigoUnico }}</td>
+              <td class="px-4 py-3">{{ pedido.nombreRepuesto }}</td>
+              <td class="px-4 py-3">{{ pedido.proveedor?.nombre }}</td>
+              <td class="px-4 py-3 text-slate-500">{{ pedido.fechaSolicitud | slice:0:16 }}</td>
+              <td class="px-4 py-3">{{ pedido.precio ? 'S/ ' + pedido.precio : '—' }}</td>
+              <td class="px-4 py-3 text-slate-500">
+                {{ pedido.fechaLlegada ? (pedido.fechaLlegada | slice:0:16) : '—' }}
+              </td>
+              
+              <td class="px-4 py-3">
+                @if (!pedido.fechaLlegada) {
+                  <button
+                    (click)="marcarLlegada(pedido)"
+                    class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-medium px-2 py-1 rounded transition"
+                  >
+                    Confirmar llegada
+                  </button>
+                } @else {
+                  <label class="flex items-center gap-2" [class.cursor-not-allowed]="pedido.instalado">
+                    <input 
+                      type="checkbox" 
+                      [checked]="pedido.instalado" 
+                      [disabled]="pedido.instalado" 
+                      (click)="marcarInstalado(pedido, $event)" 
+                      class="disabled:opacity-50"
+                    />
+                    <span
+                      class="text-xs font-medium px-2 py-1 rounded-full"
+                      [class.bg-green-100]="pedido.instalado"
+                      [class.text-green-700]="pedido.instalado"
+                      [class.bg-amber-100]="!pedido.instalado"
+                      [class.text-amber-700]="!pedido.instalado"
+                    >
+                      {{ pedido.instalado ? 'Instalado' : 'Pendiente' }}
+                    </span>
+                  </label>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+
+  <!-- DRAWER lateral -->
+  @if (mostrarPanel()) {
+    <!-- Fondo oscuro -->
+    <div class="fixed inset-0 bg-black/40 z-40" (click)="cerrarPanel()"></div>
+
+    <!-- Panel deslizante -->
+    <div
+      class="fixed top-0 right-0 h-full w-full bg-white shadow-2xl z-50 flex flex-col transition-all duration-300"
+      [class.max-w-md]="!ordenEncontrada()"
+      [class.max-w-4xl]="ordenEncontrada()"
+    >
+
+      <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200">
+        <h2 class="text-lg font-bold text-slate-800">Nuevo pedido de repuesto</h2>
+        <button (click)="cerrarPanel()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto grid grid-cols-1" [class.md:grid-cols-2]="ordenEncontrada()">
+
+        <!-- Columna izquierda: buscar + formulario -->
+        <div class="p-6 border-r border-slate-100">
+
+          <label class="block text-xs font-medium text-slate-600 mb-1">Buscar orden por código</label>
+          <div class="flex gap-2 mb-4">
+            <input
+              type="text"
+              [(ngModel)]="codigoOrden"
+              [ngModelOptions]="{standalone: true}"
+              (keyup.enter)="buscarOrden()"
+              placeholder="OT-2026-00001"
+              class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            />
+            <button
+              (click)="buscarOrden()"
+              [disabled]="buscandoOrden()"
+              class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+            >
+              Buscar
+            </button>
+          </div>
+          @if (errorBusquedaOrden()) {
+            <p class="text-red-600 text-sm mb-3">{{ errorBusquedaOrden() }}</p>
+          }
+
+          <p class="text-xs text-slate-400 mb-2">O selecciona una orden activa reciente:</p>
+          <div class="space-y-1 mb-6 max-h-40 overflow-y-auto">
+            @for (orden of sugerenciasFiltradas; track orden.id) {
+              <button
+                type="button"
+                (click)="previsualizar(orden)"
+                class="w-full text-left px-3 py-2 rounded-lg text-sm border transition"
+                [class.border-blue-400]="ordenEncontrada()?.id === orden.id"
+                [class.bg-blue-50]="ordenEncontrada()?.id === orden.id"
+                [class.border-slate-200]="ordenEncontrada()?.id !== orden.id"
+              >
+                <span class="font-medium text-blue-600">{{ orden.codigoUnico }}</span>
+                <span class="text-slate-500"> — {{ nombreCliente(orden) }}</span>
+              </button>
+            }
+          </div>
+
+          <hr class="mb-6" />
+
+          @if (ordenEncontrada()) {
+            <form [formGroup]="form" class="space-y-3">
+              <select formControlName="proveedorId" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+                <option [ngValue]="null">Selecciona proveedor *</option>
+                @for (prov of proveedores(); track prov.id) {
+                  <option [ngValue]="prov.id">{{ prov.nombre }}</option>
+                }
+              </select>
+              <input formControlName="nombreRepuesto" placeholder="Nombre del repuesto *" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input formControlName="descripcion" placeholder="Descripción" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <input formControlName="precio" type="number" placeholder="Precio (S/)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+
+              <p class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                ⚠ Al guardar, la orden cambiará automáticamente a "En espera de repuesto".
+              </p>
+
+              @if (errorMensaje()) {
+                <div class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                  {{ errorMensaje() }}
+                </div>
+              }
+
+              <button
+                type="button"
+                (click)="registrarPedido()"
+                [disabled]="form.invalid || guardando()"
+                class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-medium py-2.5 rounded-lg transition"
+              >
+                {{ guardando() ? 'Guardando...' : 'Registrar pedido' }}
+              </button>
+            </form>
+          } @else {
+            <p class="text-sm text-slate-400 text-center py-8">Busca o selecciona una orden para continuar.</p>
+          }
+        </div>
+
+        <!-- Columna derecha: vista previa en vivo -->
+        @if (ordenEncontrada()) {
+        <div class="p-6 bg-slate-50">
+          <h3 class="text-sm font-semibold text-slate-500 uppercase mb-4">Vista previa</h3>
+            <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+              <div>
+                <p class="text-xs text-slate-500">Código de orden</p>
+                <p class="text-xl font-bold text-blue-600">{{ ordenEncontrada()!.codigoUnico }}</p>
+                <span class="inline-block mt-1 bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
+                  {{ ordenEncontrada()!.estadoActual.nombre }}
+                </span>
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Cliente</p>
+                <p class="font-medium text-slate-800">{{ nombreCliente(ordenEncontrada()!) }}</p>
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Equipo</p>
+                <p class="font-medium text-slate-800">
+                  {{ ordenEncontrada()!.equipo.tipoEquipo.nombre }} — {{ ordenEncontrada()!.equipo.marca }} {{ ordenEncontrada()!.equipo.modelo }}
+                </p>
+                @if (ordenEncontrada()!.equipo.numeroSerieImei) {
+                  <p class="text-xs text-slate-500">N° serie/IMEI: {{ ordenEncontrada()!.equipo.numeroSerieImei }}</p>
+                }
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Falla reportada</p>
+                <p class="text-sm text-slate-700">{{ ordenEncontrada()!.equipo.fallaReportada }}</p>
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Técnico asignado</p>
+                <p class="text-sm text-slate-700">
+                  {{ ordenEncontrada()!.tecnicoAsignado.persona.nombre }} {{ ordenEncontrada()!.tecnicoAsignado.persona.apellidoPaterno }}
+                </p>
+              </div>
+
+              <div>
+                <p class="text-xs text-slate-500">Fecha de ingreso</p>
+                <p class="text-sm text-slate-700">{{ ordenEncontrada()!.fechaIngreso | slice:0:16 }}</p>
+              </div>
+            </div>
+            </div>
+          }
+      </div>
+    </div>
+  }
+</div>

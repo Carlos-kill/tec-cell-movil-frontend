@@ -1,0 +1,258 @@
+<div>
+  @if (cargando()) {
+    <p class="text-slate-500">Cargando...</p>
+  } @else if (orden()) {
+
+    <div class="flex items-center gap-3 mb-6">
+      <a routerLink="/ordenes" class="text-slate-400 hover:text-slate-600">← Volver</a>
+      <h1 class="text-2xl font-bold text-slate-800">{{ orden()!.codigoUnico }}</h1>
+      <span class="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
+        {{ orden()!.estadoActual.nombre }}
+      </span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+      <!-- Columna izquierda -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Datos generales -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h2 class="font-semibold text-slate-800 mb-4">Información general</h2>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-slate-500">Cliente</p>
+              <p class="font-medium text-slate-800">{{ nombreCliente() }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500">DNI</p>
+              <p class="font-medium text-slate-800">{{ orden()!.equipo.cliente.persona.dni }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500">Técnico asignado</p>
+              <p class="font-medium text-slate-800">{{ orden()!.tecnicoAsignado.persona.nombre }} {{ orden()!.tecnicoAsignado.persona.apellidoPaterno }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500">Fecha de ingreso</p>
+              <p class="font-medium text-slate-800">{{ orden()!.fechaIngreso | slice:0:16 }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500">Equipo</p>
+              <p class="font-medium text-slate-800">{{ orden()!.equipo.tipoEquipo.nombre }} — {{ orden()!.equipo.marca }} {{ orden()!.equipo.modelo }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500">N° serie / IMEI</p>
+              <p class="font-medium text-slate-800">{{ orden()!.equipo.numeroSerieImei || '—' }}</p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-slate-500">Falla reportada</p>
+              <p class="font-medium text-slate-800">{{ orden()!.equipo.fallaReportada }}</p>
+            </div>
+            @if (orden()!.equipo.estadoFisicoIngreso) {
+              <div class="col-span-2">
+                <p class="text-slate-500">Estado físico al ingreso</p>
+                <p class="font-medium text-slate-800">{{ orden()!.equipo.estadoFisicoIngreso }}</p>
+              </div>
+            }
+            @if (orden()!.fechaEntregaReal) {
+              <div class="col-span-2">
+                <p class="text-slate-500">Fecha de entrega</p>
+                <p class="font-medium text-green-700">{{ orden()!.fechaEntregaReal | slice:0:16 }}</p>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Envíos externos (solo lectura) -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-slate-800">Envíos externos</h2>
+            <a routerLink="/envios" class="text-xs text-blue-600 hover:underline">Ir al módulo de Envíos →</a>
+          </div>
+
+          @if (envios().length === 0) {
+            <p class="text-sm text-slate-500">Sin envíos registrados.</p>
+          } @else {
+            <div class="space-y-2">
+              @for (envio of envios(); track envio.id) {
+                <div class="border border-slate-200 rounded-lg p-3 text-sm">
+                  <p class="font-medium text-slate-800">{{ envio.tecnicoExternoNombre }}</p>
+                  <p class="text-slate-500">Enviado: {{ envio.fechaEnvio | slice:0:16 }} · Costo est.: S/ {{ envio.costoEstimado ?? '—' }}</p>
+                  @if (envio.fechaRetornoReal) {
+                    <p class="text-green-600">Retornado: {{ envio.fechaRetornoReal | slice:0:16 }} · Costo real: S/ {{ envio.costoReal }}</p>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Pedidos de repuesto (solo lectura) -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-slate-800">Pedidos de repuesto</h2>
+            <a routerLink="/pedidos" class="text-xs text-blue-600 hover:underline">Ir al módulo de Pedidos →</a>
+          </div>
+
+          @if (repuestos().length === 0) {
+            <p class="text-sm text-slate-500">Sin repuestos pedidos.</p>
+          } @else {
+            <div class="space-y-2">
+              @for (rep of repuestos(); track rep.id) {
+                <div class="border border-slate-200 rounded-lg p-3 text-sm flex justify-between items-center">
+                  <div>
+                    <p class="font-medium text-slate-800">{{ rep.nombreRepuesto }}</p>
+                    <p class="text-slate-500">Pedido: {{ rep.fechaSolicitud | slice:0:16 }} · S/ {{ rep.precio ?? '—' }}</p>
+                  </div>
+                  <span
+                    class="text-xs font-medium px-2 py-1 rounded-full"
+                    [class.bg-green-100]="rep.instalado"
+                    [class.text-green-700]="rep.instalado"
+                    [class.bg-amber-100]="!rep.instalado"
+                    [class.text-amber-700]="!rep.instalado"
+                  >
+                    {{ rep.instalado ? 'Instalado' : 'Pendiente' }}
+                  </span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+      </div>
+
+      <!-- Columna derecha -->
+      <div class="space-y-6">
+
+        <!-- Cambiar estado -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h2 class="font-semibold text-slate-800 mb-4">Estado del proceso</h2>
+
+          @if (procesoDetenido) {
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+              <p class="text-green-700 font-medium text-sm">✓ Proceso finalizado</p>
+              <p class="text-green-600 text-xs mt-1">Esta orden fue entregada y su historial está cerrado.</p>
+            </div>
+          } @else if (estadosValidos().length === 0) {
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+              <p class="text-slate-600 text-sm">Esperando una acción en otro módulo</p>
+              <p class="text-slate-400 text-xs mt-1">(Pedidos o Envíos) para continuar el proceso.</p>
+            </div>
+          } @else {
+            <p class="text-xs text-slate-500 mb-2">Siguiente paso del proceso:</p>
+
+            @if (errorEstado()) {
+              <p class="text-red-600 text-xs mb-2">{{ errorEstado() }}</p>
+            }
+
+            <div class="space-y-2">
+              @for (estado of estadosValidos(); track estado.id) {
+                
+                @if (orden()!.estadoActual.nombre === 'En espera de repuesto' && repuestosPendientesLlegada) {
+                  <p class="text-amber-600 text-xs mb-2">
+                    ⚠️ Confirma la llegada de todos los repuestos para continuar a {{ estado.nombre }}.
+                  </p>
+                }
+
+                @if (orden()!.estadoActual.nombre === 'En reparación' && estado.nombre === 'Listo para entrega' && repuestosPendientesInstalar) {
+                  <p class="text-amber-600 text-xs mb-2">
+                    ⚠️ Marca los repuestos como "Instalados" en el módulo de Pedidos para poder entregar el equipo.
+                  </p>
+                }
+
+                <button
+                  (click)="avanzarA(estado.id)"
+                  [disabled]="cambiandoEstado() || 
+                             (orden()!.estadoActual.nombre === 'En espera de repuesto' && repuestosPendientesLlegada) ||
+                             (orden()!.estadoActual.nombre === 'En reparación' && estado.nombre === 'Listo para entrega' && repuestosPendientesInstalar)"
+                  class="w-full bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded-lg transition"
+                >
+                  {{ cambiandoEstado() ? 'Actualizando...' : '→ ' + estado.nombre }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Historial -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h2 class="font-semibold text-slate-800 mb-4">Historial</h2>
+          <div class="space-y-3">
+            @for (item of historial(); track item.id) {
+              <div class="border-l-2 border-blue-200 pl-3 text-sm">
+                <p class="font-medium text-slate-800">{{ item.estado.nombre }}</p>
+                <p class="text-slate-500 text-xs">{{ item.fechaCambio | slice:0:16 }} · {{ item.usuario.persona.nombre }}</p>
+                @if (item.comentario) {
+                  <p class="text-slate-600 text-xs mt-1">{{ item.comentario }}</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  } @else {
+    <p class="text-red-600">No se pudo cargar la orden.</p>
+  }
+
+@if (mostrarModalCosto()) {
+  <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+      <h3 class="font-semibold text-slate-800 text-lg mb-1">Costo final del servicio</h3>
+      <p class="text-sm text-slate-500 mb-4">
+        Revisa el desglose e ingresa el costo de mano de obra para cerrar el presupuesto.
+      </p>
+
+      <div class="bg-slate-50 rounded-lg p-4 text-sm space-y-2 mb-4">
+        <div class="flex justify-between">
+          <span class="text-slate-500">Repuestos</span>
+          <span class="font-medium text-slate-800">S/ {{ totalRepuestos().toFixed(2) }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-500">Envíos externos</span>
+          <span class="font-medium text-slate-800">S/ {{ totalEnvios().toFixed(2) }}</span>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+          <span class="text-slate-600">Mano de obra</span>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            [ngModel]="costoManoObraInput()"
+            (ngModelChange)="costoManoObraInput.set($event)"
+            placeholder="0.00"
+            class="w-28 text-right border border-slate-300 rounded px-2 py-1 text-sm"
+          />
+        </div>
+        <div class="flex justify-between pt-2 border-t border-slate-200 font-semibold">
+          <span class="text-slate-700">Total</span>
+          <span class="text-slate-900">S/ {{ totalEstimadoModal().toFixed(2) }}</span>
+        </div>
+      </div>
+
+      @if (errorModal()) {
+        <p class="text-red-600 text-xs mb-3">{{ errorModal() }}</p>
+      }
+
+      <div class="flex gap-2">
+        <button
+          (click)="cerrarModalCosto()"
+          [disabled]="cambiandoEstado()"
+          class="flex-1 border border-slate-300 text-slate-700 text-sm font-medium py-2.5 rounded-lg hover:bg-slate-50"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="confirmarCostoYAvanzar()"
+          [disabled]="cambiandoEstado()"
+          class="flex-1 bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white text-sm font-medium py-2.5 rounded-lg"
+        >
+          {{ cambiandoEstado() ? 'Guardando...' : 'Confirmar y avanzar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+</div>
