@@ -1,63 +1,224 @@
-<div>
-  <h1 class="text-2xl font-bold text-slate-800 mb-6">Dashboard</h1>
+<div class="space-y-8">
+  <!-- Cabecera del Dashboard -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Panel Principal</h1>
+      <p class="text-xs text-slate-500 mt-1">Supervisa las métricas clave, órdenes activas y estado del taller en tiempo real.</p>
+    </div>
+    
+  </div>
 
   @if (cargando()) {
-    <p class="text-slate-500">Cargando...</p>
+    <div class="flex flex-col items-center justify-center py-20 space-y-4">
+      <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-500 border-t-transparent"></div>
+      <p class="text-xs text-slate-400 font-medium">Cargando estadísticas del sistema...</p>
+    </div>
   } @else if (datos()) {
 
-    <!-- Tarjetas resumen -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      @for (item of estadosComoLista; track item.estado) {
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <p class="text-sm text-slate-500">{{ item.estado }}</p>
-          <p class="text-3xl font-bold text-slate-800 mt-1">{{ item.cantidad }}</p>
+    <!-- Sección de KPI Cards -->
+    <div>
+      <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Estado General de Órdenes</h2>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Estados Dinámicos -->
+        @for (item of estadosComoLista; track item.estado) {
+          <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all hover:scale-[1.01] duration-300 relative overflow-hidden group">
+            <!-- Icon Background decoration -->
+            <div class="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-full -z-10 group-hover:bg-brand-50/50 transition-colors"></div>
+            
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="text-xs font-semibold text-slate-400 truncate max-w-[150px]">{{ item.estado }}</p>
+                <p class="text-3xl font-extrabold text-slate-900 mt-2.5 tracking-tight">{{ item.cantidad }}</p>
+              </div>
+              
+              <!-- Icon/Badge Contextual por Estado -->
+              <span 
+                class="p-2.5 rounded-xl text-xs font-semibold border"
+                [class.bg-blue-50]="item.estado === 'Ingresado'"
+                [class.text-blue-600]="item.estado === 'Ingresado'"
+                [class.border-blue-100]="item.estado === 'Ingresado'"
+                
+                [class.bg-amber-50]="item.estado === 'En espera de repuestos' || item.estado === 'Enviado a tercero'"
+                [class.text-amber-600]="item.estado === 'En espera de repuestos' || item.estado === 'Enviado a tercero'"
+                [class.border-amber-100]="item.estado === 'En espera de repuestos' || item.estado === 'Enviado a tercero'"
+                
+                [class.bg-indigo-50]="item.estado === 'En reparación' || item.estado === 'En diagnóstico'"
+                [class.text-indigo-600]="item.estado === 'En reparación' || item.estado === 'En diagnóstico'"
+                [class.border-indigo-100]="item.estado === 'En reparación' || item.estado === 'En diagnóstico'"
+                
+                [class.bg-emerald-50]="item.estado === 'Reparación finalizada' || item.estado === 'Entregado al cliente'"
+                [class.text-emerald-600]="item.estado === 'Reparación finalizada' || item.estado === 'Entregado al cliente'"
+                [class.border-emerald-100]="item.estado === 'Reparación finalizada' || item.estado === 'Entregado al cliente'"
+                
+                [class.bg-slate-50]="item.estado !== 'Ingresado' && item.estado !== 'En espera de repuestos' && item.estado !== 'Enviado a tercero' && item.estado !== 'En reparación' && item.estado !== 'En diagnóstico' && item.estado !== 'Reparación finalizada' && item.estado !== 'Entregado al cliente'"
+                [class.text-slate-600]="item.estado !== 'Ingresado' && item.estado !== 'En espera de repuestos' && item.estado !== 'Enviado a tercero' && item.estado !== 'En reparación' && item.estado !== 'En diagnóstico' && item.estado !== 'Reparación finalizada' && item.estado !== 'Entregado al cliente'"
+                [class.border-slate-100]="item.estado !== 'Ingresado' && item.estado !== 'En espera de repuestos' && item.estado !== 'Enviado a tercero' && item.estado !== 'En reparación' && item.estado !== 'En diagnóstico' && item.estado !== 'Reparación finalizada' && item.estado !== 'Entregado al cliente'"
+              >
+                <!-- SVG Icon dinámico -->
+                @if (item.estado === 'Ingresado') {
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                } @else if (item.estado === 'En espera de repuestos' || item.estado === 'Enviado a tercero') {
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                } @else if (item.estado === 'En reparación' || item.estado === 'En diagnóstico') {
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0z" /></svg>
+                } @else {
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                }
+              </span>
+            </div>
+
+            <!-- Mini Sparkline Decorativo en SVG (Estética Stripe) -->
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-[10px] text-slate-400 font-semibold uppercase">Carga Activa</span>
+              <svg class="w-16 h-5 text-slate-350" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 60 20">
+                <path d="M0,15 Q10,5 20,12 T40,4 T60,18" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+        }
+
+        <!-- Tarjeta Adicional: Envíos en tránsito -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all hover:scale-[1.01] duration-300 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-full -z-10 group-hover:bg-brand-50/50 transition-colors"></div>
+          
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold text-slate-400">Envíos en tránsito</p>
+              <p class="text-3xl font-extrabold text-slate-900 mt-2.5 tracking-tight">{{ datos()!.ordenesEnvioTransito }}</p>
+            </div>
+            
+            <span class="p-2.5 rounded-xl bg-brand-50 text-brand-600 border border-brand-100">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            </span>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase">Externalizados</span>
+            <svg class="w-16 h-5 text-brand-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 60 20">
+              <path d="M0,18 Q15,8 30,12 T60,5" stroke-linecap="round"/>
+            </svg>
+          </div>
         </div>
-      }
 
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <p class="text-sm text-slate-500">Envíos en tránsito</p>
-        <p class="text-3xl font-bold text-blue-600 mt-1">{{ datos()!.ordenesEnvioTransito }}</p>
-      </div>
+        <!-- Tarjeta Adicional: Entregadas hoy -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md transition-all hover:scale-[1.01] duration-300 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-bl-full -z-10 group-hover:bg-brand-50/50 transition-colors"></div>
+          
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-xs font-semibold text-slate-400">Entregadas hoy</p>
+              <p class="text-3xl font-extrabold text-slate-900 mt-2.5 tracking-tight">{{ datos()!.ordenesEntregadasHoy }}</p>
+            </div>
+            
+            <span class="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
+          </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <p class="text-sm text-slate-500">Entregadas hoy</p>
-        <p class="text-3xl font-bold text-green-600 mt-1">{{ datos()!.ordenesEntregadasHoy }}</p>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-[10px] text-slate-400 font-semibold uppercase">Completados</span>
+            <svg class="w-16 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 60 20">
+              <path d="M0,12 T15,18 T30,5 T45,12 T60,2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Órdenes urgentes -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-      <h2 class="font-semibold text-slate-800 mb-4">Órdenes más antiguas sin cerrar</h2>
+    <!-- Sección de Órdenes Urgentes -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <!-- Encabezado de la Sección -->
+      <div class="p-6 border-b border-slate-200/85 flex items-center justify-between bg-slate-50/20">
+        <div class="flex items-center space-x-3">
+          <span class="p-2 bg-rose-50 text-rose-600 rounded-lg border border-rose-100">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </span>
+          <div>
+            <h2 class="font-bold text-slate-900 text-sm">Órdenes Críticas</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Dispositivos con mayor tiempo de espera en el taller sin cerrar.</p>
+          </div>
+        </div>
+        
+        <span class="text-xs font-semibold px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-100 rounded-full">
+          Acción Requerida
+        </span>
+      </div>
 
-      @if (datos()!.ordenesUrgentes.length === 0) {
-        <p class="text-sm text-slate-500">No hay órdenes pendientes 🎉</p>
-      } @else {
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-left text-slate-500 border-b border-slate-200">
-              <th class="pb-2">Código</th>
-              <th class="pb-2">Cliente</th>
-              <th class="pb-2">Técnico</th>
-              <th class="pb-2">Estado</th>
-              <th class="pb-2">Ingreso</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (orden of datos()!.ordenesUrgentes; track orden.codigoUnico) {
-              <tr class="border-b border-slate-100">
-                <td class="py-2 font-medium text-blue-600">{{ orden.codigoUnico }}</td>
-                <td class="py-2">{{ orden.clienteNombre }}</td>
-                <td class="py-2">{{ orden.tecnicoNombre }}</td>
-                <td class="py-2">{{ orden.estadoActual }}</td>
-                <td class="py-2 text-slate-500">{{ orden.fechaIngreso | slice:0:10 }}</td>
+      <!-- Tabla de Órdenes -->
+      <div class="overflow-x-auto">
+        @if (datos()!.ordenesUrgentes.length === 0) {
+          <div class="flex flex-col items-center justify-center py-12 text-slate-500 text-sm space-y-2">
+            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="font-medium text-slate-600">No hay órdenes pendientes. ¡Buen trabajo!</p>
+          </div>
+        } @else {
+          <table class="w-full text-xs text-left">
+            <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="px-6 py-4">Código</th>
+                <th class="px-6 py-4">Cliente</th>
+                <th class="px-6 py-4">Técnico</th>
+                <th class="px-6 py-4">Estado</th>
+                <th class="px-6 py-4">Fecha de Ingreso</th>
               </tr>
-            }
-          </tbody>
-        </table>
-      }
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (orden of datos()!.ordenesUrgentes; track orden.codigoUnico) {
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                  <td class="px-6 py-4 font-mono font-semibold text-brand-600">{{ orden.codigoUnico }}</td>
+                  <td class="px-6 py-4 font-medium text-slate-700">{{ orden.clienteNombre }}</td>
+                  <td class="px-6 py-4 text-slate-600">
+                    <div class="flex items-center space-x-2">
+                      <div class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-500">
+                        {{ orden.tecnicoNombre.split(' ')[0][0] }}
+                      </div>
+                      <span>{{ orden.tecnicoNombre }}</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span 
+                      class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border"
+                      [class.bg-blue-50]="orden.estadoActual === 'Ingresado'"
+                      [class.text-blue-700]="orden.estadoActual === 'Ingresado'"
+                      [class.border-blue-100]="orden.estadoActual === 'Ingresado'"
+                      
+                      [class.bg-amber-50]="orden.estadoActual === 'En espera de repuestos' || orden.estadoActual === 'Enviado a tercero'"
+                      [class.text-amber-700]="orden.estadoActual === 'En espera de repuestos' || orden.estadoActual === 'Enviado a tercero'"
+                      [class.border-amber-100]="orden.estadoActual === 'En espera de repuestos' || orden.estadoActual === 'Enviado a tercero'"
+                      
+                      [class.bg-indigo-50]="orden.estadoActual === 'En reparación' || orden.estadoActual === 'En diagnóstico'"
+                      [class.text-indigo-700]="orden.estadoActual === 'En reparación' || orden.estadoActual === 'En diagnóstico'"
+                      [class.border-indigo-100]="orden.estadoActual === 'En reparación' || orden.estadoActual === 'En diagnóstico'"
+                      
+                      [class.bg-slate-50]="orden.estadoActual !== 'Ingresado' && orden.estadoActual !== 'En espera de repuestos' && orden.estadoActual !== 'Enviado a tercero' && orden.estadoActual !== 'En reparación' && orden.estadoActual !== 'En diagnóstico'"
+                      [class.text-slate-700]="orden.estadoActual !== 'Ingresado' && orden.estadoActual !== 'En espera de repuestos' && orden.estadoActual !== 'Enviado a tercero' && orden.estadoActual !== 'En reparación' && orden.estadoActual !== 'En diagnóstico'"
+                      [class.border-slate-200]="orden.estadoActual !== 'Ingresado' && orden.estadoActual !== 'En espera de repuestos' && orden.estadoActual !== 'Enviado a tercero' && orden.estadoActual !== 'En reparación' && orden.estadoActual !== 'En diagnóstico'"
+                    >
+                      {{ orden.estadoActual }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-slate-500">{{ orden.fechaIngreso | slice:0:10 }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
     </div>
 
   } @else {
-    <p class="text-red-600">No se pudo cargar el dashboard.</p>
+    <div class="bg-rose-50 border border-rose-100 rounded-2xl p-6 text-center">
+      <p class="text-rose-700 font-semibold text-sm">Error de conexión</p>
+      <p class="text-rose-600 text-xs mt-1">No se pudo recuperar los datos de panel en este momento. Intenta de nuevo más tarde.</p>
+    </div>
   }
 </div>

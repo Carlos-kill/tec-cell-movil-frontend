@@ -1,134 +1,207 @@
-<div>
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-slate-800">Clientes</h1>
+<div class="space-y-6">
+  <!-- Cabecera de Página -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Clientes</h1>
+      <p class="text-xs text-slate-500 mt-1">Busca, administra y registra las cuentas de clientes asociados al servicio técnico.</p>
+    </div>
+    
     <button
       (click)="abrirFormulario()"
-      class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+      class="inline-flex items-center justify-center bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4.5 py-2.5 rounded-xl shadow-md shadow-brand-500/10 hover:shadow-lg transition-all space-x-2 cursor-pointer border-0 outline-none"
     >
-      + Nuevo cliente
+      <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      <span>Nuevo Cliente</span>
     </button>
   </div>
 
-  <!-- Buscador -->
-  <div class="mb-4 flex gap-2">
-    <input
-      type="text"
-      [(ngModel)]="textoBusqueda"
-      (keyup.enter)="onBuscar()"
-      placeholder="Buscar por nombre o DNI..."
-      class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
+  <!-- Barra de búsqueda -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex gap-2">
+    <div class="relative flex-1">
+      <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="textoBusqueda"
+        (keyup.enter)="onBuscar()"
+        placeholder="Buscar por nombre, apellido o DNI..."
+        class="w-full text-xs bg-slate-55 border border-slate-200 pl-9 pr-4 py-2.5 rounded-xl placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+      />
+    </div>
     <button
       (click)="onBuscar()"
-      class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-medium px-4 py-2 rounded-lg transition"
+      class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-all cursor-pointer border-0 outline-none"
     >
       Buscar
     </button>
   </div>
 
-  <!-- Tabla -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <!-- Tabla de Clientes -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
     @if (cargando()) {
-      <p class="p-6 text-slate-500 text-sm">Cargando...</p>
+      <div class="flex flex-col items-center justify-center py-20 space-y-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-500 border-t-transparent"></div>
+        <p class="text-xs text-slate-400 font-medium">Buscando clientes registrados...</p>
+      </div>
     } @else if (clientes().length === 0) {
-      <p class="p-6 text-slate-500 text-sm">No se encontraron clientes.</p>
+      <div class="flex flex-col items-center justify-center py-16 text-slate-500 text-sm space-y-2">
+        <svg class="w-10 h-10 text-slate-350" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <p class="font-medium text-slate-650">No se encontraron clientes.</p>
+        <p class="text-xs text-slate-400">Prueba cambiando la búsqueda o crea un nuevo registro.</p>
+      </div>
     } @else {
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-500 text-left">
-          <tr>
-            <th class="px-4 py-3">DNI</th>
-            <th class="px-4 py-3">Nombre</th>
-            <th class="px-4 py-3">Teléfono</th>
-            <th class="px-4 py-3">Correo</th>
-            <th class="px-4 py-3">Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (cliente of clientes(); track cliente.id) {
-            <tr class="border-t border-slate-100 hover:bg-slate-50">
-              <td class="px-4 py-3">{{ cliente.persona.dni }}</td>
-              <td class="px-4 py-3 font-medium text-slate-800">{{ nombreCompleto(cliente) }}</td>
-              <td class="px-4 py-3">{{ cliente.persona.telefono || '—' }}</td>
-              <td class="px-4 py-3">{{ cliente.persona.correo || '—' }}</td>
-              <td class="px-4 py-3">
-                @if (cliente.estado) {
-                  <span class="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">Activo</span>
-                } @else {
-                  <span class="bg-slate-100 text-slate-500 text-xs font-medium px-2 py-1 rounded-full">Inactivo</span>
-                }
-              </td>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-4">DNI</th>
+              <th class="px-6 py-4">Nombre Completo</th>
+              <th class="px-6 py-4">Teléfono</th>
+              <th class="px-6 py-4">Correo Electrónico</th>
+              <th class="px-6 py-4">Estado</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (cliente of clientes(); track cliente.id) {
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="px-6 py-4 font-mono font-semibold text-slate-800">{{ cliente.persona.dni }}</td>
+                <td class="px-6 py-4 font-bold text-slate-900">{{ nombreCompleto(cliente) }}</td>
+                <td class="px-6 py-4 text-slate-600 font-medium">{{ cliente.persona.telefono || '—' }}</td>
+                <td class="px-6 py-4 text-slate-600">{{ cliente.persona.correo || '—' }}</td>
+                <td class="px-6 py-4">
+                  <span 
+                    class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
+                    [class.bg-emerald-50]="cliente.estado"
+                    [class.text-emerald-700]="cliente.estado"
+                    [class.border-emerald-100]="cliente.estado"
+                    [class.bg-slate-50]="!cliente.estado"
+                    [class.text-slate-500]="!cliente.estado"
+                    [class.border-slate-200]="!cliente.estado"
+                  >
+                    {{ cliente.estado ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     }
   </div>
 
-  <!-- Formulario modal simple -->
+  <!-- Formulario modal de nuevo cliente (Estilo Clerk/Stripe) -->
   @if (mostrarFormulario()) {
-    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4">Nuevo cliente</h2>
+    <div class="fixed inset-0 bg-navy-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-slate-200/80 overflow-hidden animate-fade-in">
+        
+        <!-- Cabecera Modal -->
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10">
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Nuevo Cliente</h2>
+          <p class="text-xs text-slate-400 mt-1">Registra los datos personales obligatorios para habilitar el ingreso de sus equipos.</p>
+        </div>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-3">
-
-          <div class="grid grid-cols-2 gap-3">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4 p-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">DNI *</label>
-              <input formControlName="dni" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">DNI *</label>
+              <input 
+                formControlName="dni" 
+                placeholder="Ingresa DNI" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono" 
+              />
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Teléfono</label>
-              <input formControlName="telefono" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Nombre *</label>
-            <input formControlName="nombre" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Apellido paterno *</label>
-              <input formControlName="apellidoPaterno" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Apellido materno</label>
-              <input formControlName="apellidoMaterno" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Teléfono</label>
+              <input 
+                formControlName="telefono" 
+                placeholder="Número de contacto" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+              />
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Correo</label>
-            <input formControlName="correo" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <label class="block text-xs font-semibold text-slate-650 mb-1.5">Nombre *</label>
+            <input 
+              formControlName="nombre" 
+              placeholder="Nombres completos" 
+              class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+            />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Apellido Paterno *</label>
+              <input 
+                formControlName="apellidoPaterno" 
+                placeholder="Primer apellido" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Apellido Materno</label>
+              <input 
+                formControlName="apellidoMaterno" 
+                placeholder="Segundo apellido" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+              />
+            </div>
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Dirección</label>
-            <input formControlName="direccion" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <label class="block text-xs font-semibold text-slate-650 mb-1.5">Correo Electrónico</label>
+            <input 
+              formControlName="correo" 
+              type="email" 
+              placeholder="ejemplo@correo.com" 
+              class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-650 mb-1.5">Dirección de Domicilio</label>
+            <input 
+              formControlName="direccion" 
+              placeholder="Dirección del domicilio" 
+              class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+            />
           </div>
 
           @if (errorMensaje()) {
-            <div class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {{ errorMensaje() }}
+            <div class="flex items-start space-x-2 text-red-750 text-xs bg-red-50 border border-red-100 rounded-xl p-3">
+              <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{{ errorMensaje() }}</span>
             </div>
           }
 
-          <div class="flex gap-2 pt-2">
+          <!-- Acciones del Modal -->
+          <div class="flex gap-3 pt-2">
             <button
               type="button"
               (click)="cerrarFormulario()"
-              class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-2 rounded-lg transition"
+              class="flex-1 border border-slate-250 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold py-2.5 rounded-xl cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               [disabled]="form.invalid || guardando()"
-              class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-medium py-2 rounded-lg transition"
+              class="flex-1 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 text-white text-xs font-semibold py-2.5 rounded-xl shadow-md shadow-brand-500/10 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
             >
-              {{ guardando() ? 'Guardando...' : 'Guardar' }}
+              @if (guardando()) {
+                <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mx-auto"></span>
+              } @else {
+                <span>Guardar Cliente</span>
+              }
             </button>
           </div>
         </form>

@@ -1,105 +1,241 @@
-<div>
-  <h1 class="text-2xl font-bold text-slate-800 mb-6">Configuración</h1>
+<div class="space-y-6">
+  <!-- Cabecera de Página -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Configuración</h1>
+    <p class="text-xs text-slate-500 mt-1">Configura los parámetros globales del sistema, tipos de dispositivos, estados de orden de trabajo y proveedores.</p>
+  </div>
 
-  <!-- Pestañas -->
-  <div class="flex gap-2 mb-6 border-b border-slate-200">
+  <!-- Pestañas de Configuración (Estilo Vercel/Clerk) -->
+  <div class="flex gap-1.5 border-b border-slate-200 overflow-x-auto pb-px">
     <button
       (click)="cambiarPestana('tipos')"
-      class="px-4 py-2 text-sm font-medium border-b-2 transition"
-      [class.border-blue-600]="pestanaActiva() === 'tipos'"
-      [class.text-blue-600]="pestanaActiva() === 'tipos'"
+      class="px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap"
+      [class.border-brand-500]="pestanaActiva() === 'tipos'"
+      [class.text-brand-650]="pestanaActiva() === 'tipos'"
       [class.border-transparent]="pestanaActiva() !== 'tipos'"
       [class.text-slate-500]="pestanaActiva() !== 'tipos'"
+      [class.hover:text-slate-800]="pestanaActiva() !== 'tipos'"
     >
-      Tipos de equipo
+      Tipos de Equipo
     </button>
     <button
       (click)="cambiarPestana('estados')"
-      class="px-4 py-2 text-sm font-medium border-b-2 transition"
-      [class.border-blue-600]="pestanaActiva() === 'estados'"
-      [class.text-blue-600]="pestanaActiva() === 'estados'"
+      class="px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap"
+      [class.border-brand-500]="pestanaActiva() === 'estados'"
+      [class.text-brand-650]="pestanaActiva() === 'estados'"
       [class.border-transparent]="pestanaActiva() !== 'estados'"
       [class.text-slate-500]="pestanaActiva() !== 'estados'"
+      [class.hover:text-slate-800]="pestanaActiva() !== 'estados'"
     >
-      Estados de orden
+      Estados de Orden
     </button>
     <button
       (click)="cambiarPestana('proveedores')"
-      class="px-4 py-2 text-sm font-medium border-b-2 transition"
-      [class.border-blue-600]="pestanaActiva() === 'proveedores'"
-      [class.text-blue-600]="pestanaActiva() === 'proveedores'"
+      class="px-4 py-2.5 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap"
+      [class.border-brand-500]="pestanaActiva() === 'proveedores'"
+      [class.text-brand-650]="pestanaActiva() === 'proveedores'"
       [class.border-transparent]="pestanaActiva() !== 'proveedores'"
       [class.text-slate-500]="pestanaActiva() !== 'proveedores'"
+      [class.hover:text-slate-800]="pestanaActiva() !== 'proveedores'"
     >
       Proveedores
     </button>
   </div>
 
-  <!-- TIPOS DE EQUIPO -->
+  <!-- PESTAÑA: TIPOS DE EQUIPO -->
   @if (pestanaActiva() === 'tipos') {
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <div class="flex gap-2 mb-4">
-        <input [(ngModel)]="nuevoNombre" placeholder="Nombre del nuevo tipo (ej. Tablet)" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <button (click)="agregarTipoEquipo()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-          Agregar
-        </button>
+    <div class="space-y-5">
+      <!-- Agregar Nuevo Tipo -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
+        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Registrar Nuevo Tipo de Dispositivo</h3>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input 
+            [(ngModel)]="nuevoNombre" 
+            placeholder="Ej. Tablet, Smartwatch, Consola" 
+            class="flex-1 rounded-xl border border-slate-200/80 bg-slate-55 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+          />
+          <button 
+            (click)="agregarTipoEquipo()" 
+            class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-6 py-2.5 rounded-xl transition-all cursor-pointer border-0 outline-none"
+          >
+            Agregar Tipo
+          </button>
+        </div>
       </div>
-      <div class="space-y-2">
-        @for (tipo of tiposEquipo(); track tipo.id) {
-          <div class="flex justify-between items-center border border-slate-200 rounded-lg px-4 py-2 text-sm">
-            <span [class.text-slate-400]="!tipo.activo">{{ tipo.nombre }}</span>
-            <button (click)="toggleTipoEquipo(tipo)" class="text-xs text-blue-600 hover:underline">
-              {{ tipo.activo ? 'Desactivar' : 'Activar' }}
-            </button>
-          </div>
-        }
+
+      <!-- Listado -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tipos de Equipos en el Sistema</p>
+        </div>
+        <div class="divide-y divide-slate-100">
+          @for (tipo of tiposEquipo(); track tipo.id) {
+            <div class="flex justify-between items-center px-6 py-3.5 text-xs">
+              <div class="flex items-center space-x-3">
+                <span 
+                  class="w-2 h-2 rounded-full" 
+                  [class.bg-emerald-500]="tipo.activo" 
+                  [class.bg-slate-350]="!tipo.activo"
+                ></span>
+                <span class="font-semibold" [class.text-slate-800]="tipo.activo" [class.text-slate-400]="!tipo.activo">
+                  {{ tipo.nombre }}
+                </span>
+              </div>
+              <button 
+                (click)="toggleTipoEquipo(tipo)" 
+                class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
+                [class.bg-rose-50]="tipo.activo"
+                [class.text-rose-700]="tipo.activo"
+                [class.border-rose-100]="tipo.activo"
+                [class.bg-brand-50]="!tipo.activo"
+                [class.text-brand-700]="!tipo.activo"
+                [class.border-brand-100]="!tipo.activo"
+              >
+                {{ tipo.activo ? 'Desactivar' : 'Activar' }}
+              </button>
+            </div>
+          }
+        </div>
       </div>
     </div>
   }
 
-  <!-- ESTADOS DE ORDEN -->
+  <!-- PESTAÑA: ESTADOS DE ORDEN -->
   @if (pestanaActiva() === 'estados') {
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <div class="flex gap-2 mb-4">
-        <input [(ngModel)]="nuevoNombre" placeholder="Nombre del estado" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <input [(ngModel)]="nuevoOrdenVisual" type="number" placeholder="Orden" class="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <button (click)="agregarEstadoOrden()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition">
-          Agregar
-        </button>
+    <div class="space-y-5">
+      <!-- Agregar Nuevo Estado -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
+        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Registrar Nuevo Estado de Orden</h3>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input 
+            [(ngModel)]="nuevoNombre" 
+            placeholder="Nombre del estado (Ej. Diagnóstico finalizado)" 
+            class="flex-1 rounded-xl border border-slate-200/80 bg-slate-55 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+          />
+          <input 
+            [(ngModel)]="nuevoOrdenVisual" 
+            type="number" 
+            placeholder="Orden" 
+            class="w-full sm:w-28 rounded-xl border border-slate-200/80 bg-slate-55 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono" 
+          />
+          <button 
+            (click)="agregarEstadoOrden()" 
+            class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-6 py-2.5 rounded-xl transition-all cursor-pointer border-0 outline-none whitespace-nowrap"
+          >
+            Agregar Estado
+          </button>
+        </div>
       </div>
-      <div class="space-y-2">
-        @for (estado of estadosOrden(); track estado.id) {
-          <div class="flex justify-between items-center border border-slate-200 rounded-lg px-4 py-2 text-sm">
-            <span [class.text-slate-400]="!estado.activo">{{ estado.ordenVisual }}. {{ estado.nombre }}</span>
-            <button (click)="toggleEstadoOrden(estado)" class="text-xs text-blue-600 hover:underline">
-              {{ estado.activo ? 'Desactivar' : 'Activar' }}
-            </button>
-          </div>
-        }
+
+      <!-- Listado -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estados de Orden del Proceso</p>
+        </div>
+        <div class="divide-y divide-slate-100">
+          @for (estado of estadosOrden(); track estado.id) {
+            <div class="flex justify-between items-center px-6 py-3.5 text-xs">
+              <div class="flex items-center space-x-3">
+                <span class="font-mono text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200/60 rounded px-1.5 py-0.5">
+                  Fase {{ estado.ordenVisual }}
+                </span>
+                <span class="font-semibold" [class.text-slate-800]="estado.activo" [class.text-slate-400]="!estado.activo">
+                  {{ estado.nombre }}
+                </span>
+              </div>
+              <button 
+                (click)="toggleEstadoOrden(estado)" 
+                class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
+                [class.bg-rose-50]="estado.activo"
+                [class.text-rose-700]="estado.activo"
+                [class.border-rose-100]="estado.activo"
+                [class.bg-brand-50]="!estado.activo"
+                [class.text-brand-700]="!estado.activo"
+                [class.border-brand-100]="!estado.activo"
+              >
+                {{ estado.activo ? 'Desactivar' : 'Activar' }}
+              </button>
+            </div>
+          }
+        </div>
       </div>
     </div>
   }
 
-  <!-- PROVEEDORES -->
+  <!-- PESTAÑA: PROVEEDORES -->
   @if (pestanaActiva() === 'proveedores') {
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <div class="grid grid-cols-3 gap-2 mb-4">
-        <input [(ngModel)]="nuevoNombre" placeholder="Nombre del proveedor" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <input [(ngModel)]="nuevoContacto" placeholder="Contacto" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <input [(ngModel)]="nuevoTelefono" placeholder="Teléfono" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+    <div class="space-y-5">
+      <!-- Registrar Proveedor -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
+        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Registrar Nuevo Proveedor de Repuestos</h3>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <input 
+            [(ngModel)]="nuevoNombre" 
+            placeholder="Razón Social / Nombre" 
+            class="rounded-xl border border-slate-200/80 bg-slate-55 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+          />
+          <input 
+            [(ngModel)]="nuevoContacto" 
+            placeholder="Persona de Contacto" 
+            class="rounded-xl border border-slate-200/80 bg-slate-55 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+          />
+          <input 
+            [(ngModel)]="nuevoTelefono" 
+            placeholder="Teléfono móvil" 
+            class="rounded-xl border border-slate-200/80 bg-slate-55 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+          />
+        </div>
+        <div class="flex justify-end">
+          <button 
+            (click)="agregarProveedor()" 
+            class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-6 py-2.5 rounded-xl transition-all cursor-pointer border-0 outline-none"
+          >
+            Agregar Proveedor
+          </button>
+        </div>
       </div>
-      <button (click)="agregarProveedor()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition mb-4">
-        Agregar proveedor
-      </button>
-      <div class="space-y-2">
-        @for (prov of proveedores(); track prov.id) {
-          <div class="flex justify-between items-center border border-slate-200 rounded-lg px-4 py-2 text-sm">
-            <span [class.text-slate-400]="!prov.activo">{{ prov.nombre }} — {{ prov.contacto || 'sin contacto' }}</span>
-            <button (click)="toggleProveedor(prov)" class="text-xs text-blue-600 hover:underline">
-              {{ prov.activo ? 'Desactivar' : 'Activar' }}
-            </button>
-          </div>
-        }
+
+      <!-- Listado -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Proveedores Registrados</p>
+        </div>
+        <div class="divide-y divide-slate-100">
+          @for (prov of proveedores(); track prov.id) {
+            <div class="flex justify-between items-center px-6 py-3.5 text-xs">
+              <div class="flex items-center space-x-3">
+                <span 
+                  class="w-2 h-2 rounded-full" 
+                  [class.bg-emerald-500]="prov.activo" 
+                  [class.bg-slate-350]="!prov.activo"
+                ></span>
+                <div>
+                  <span class="font-bold block" [class.text-slate-800]="prov.activo" [class.text-slate-400]="!prov.activo">
+                    {{ prov.nombre }}
+                  </span>
+                  @if (prov.contacto || prov.telefono) {
+                    <span class="text-[10px] text-slate-500 block mt-0.5 font-medium">
+                      Contacto: {{ prov.contacto || '—' }} · Tlf: {{ prov.telefono || '—' }}
+                    </span>
+                  }
+                </div>
+              </div>
+              <button 
+                (click)="toggleProveedor(prov)" 
+                class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
+                [class.bg-rose-50]="prov.activo"
+                [class.text-rose-700]="prov.activo"
+                [class.border-rose-100]="prov.activo"
+                [class.bg-brand-50]="!prov.activo"
+                [class.text-brand-700]="!prov.activo"
+                [class.border-brand-100]="!prov.activo"
+              >
+                {{ prov.activo ? 'Desactivar' : 'Activar' }}
+              </button>
+            </div>
+          }
+        </div>
       </div>
     </div>
   }

@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { RepuestoService } from '../../core/services/repuesto.service';
 import { OrdenService } from '../../core/services/orden.service';
 import { CatalogoService } from '../../core/services/catalogo.service';
@@ -13,7 +14,7 @@ import { EstadoOrden } from '../../core/models/catalogos.model';
 @Component({
   selector: 'app-pedidos',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './pedidos.html',
   styleUrl: './pedidos.css',
 })

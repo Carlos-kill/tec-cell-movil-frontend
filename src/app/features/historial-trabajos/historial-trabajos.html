@@ -1,51 +1,104 @@
-<div>
-  <h1 class="text-2xl font-bold text-slate-800 mb-1">Historial de Trabajos</h1>
-  <p class="text-slate-500 text-sm mb-6">Órdenes ya entregadas al cliente</p>
-
-  <div class="mb-4">
-    <input
-      type="text"
-      [(ngModel)]="textoBusqueda"
-      placeholder="Buscar por código, cliente o técnico..."
-      class="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
+<div class="space-y-6">
+  <!-- Cabecera de Página -->
+  <div>
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Historial de Trabajos</h1>
+    <p class="text-xs text-slate-500 mt-1">Consulta la base de datos histórica de órdenes completadas, entregadas y liquidadas financieramente.</p>
   </div>
 
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <!-- Barra de Búsqueda -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm">
+    <div class="relative max-w-md w-full">
+      <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="textoBusqueda"
+        placeholder="Buscar por código, cliente o técnico..."
+        class="w-full text-xs bg-slate-55 border border-slate-200 pl-9 pr-4 py-2.5 rounded-xl placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+      />
+    </div>
+  </div>
+
+  <!-- Tabla Principal de Historial -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
     @if (cargando()) {
-      <p class="p-6 text-slate-500 text-sm">Cargando...</p>
+      <div class="flex flex-col items-center justify-center py-20 space-y-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-500 border-t-transparent"></div>
+        <p class="text-xs text-slate-400 font-medium">Buscando registros históricos...</p>
+      </div>
     } @else if (ordenesFiltradas.length === 0) {
-      <p class="p-6 text-slate-500 text-sm">No hay trabajos entregados todavía.</p>
+      <div class="flex flex-col items-center justify-center py-16 text-slate-500 text-sm space-y-2">
+        <svg class="w-10 h-10 text-slate-350" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="font-medium text-slate-655">No hay trabajos registrados como entregados aún.</p>
+        <p class="text-xs text-slate-400">Una vez que entregues equipos y cierres su presupuesto aparecerán aquí.</p>
+      </div>
     } @else {
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-500 text-left">
-          <tr>
-            <th class="px-4 py-3">Orden</th>
-            <th class="px-4 py-3">Cliente</th>
-            <th class="px-4 py-3">Equipo</th>
-            <th class="px-4 py-3">Técnico</th>
-            <th class="px-4 py-3">Ingreso</th>
-            <th class="px-4 py-3">Entrega</th>
-            <th class="px-4 py-3">Costo total</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (orden of ordenesFiltradas; track orden.id) {
-            <tr
-              class="border-t border-slate-100 hover:bg-slate-50 cursor-pointer"
-              [routerLink]="['/ordenes', orden.id]"
-            >
-              <td class="px-4 py-3 font-medium text-blue-600">{{ orden.codigoUnico }}</td>
-              <td class="px-4 py-3">{{ nombreCliente(orden) }}</td>
-              <td class="px-4 py-3">{{ orden.equipo.tipoEquipo.nombre }} {{ orden.equipo.marca }}</td>
-              <td class="px-4 py-3">{{ nombreTecnico(orden) }}</td>
-              <td class="px-4 py-3 text-slate-500">{{ orden.fechaIngreso | slice:0:10 }}</td>
-              <td class="px-4 py-3 text-slate-500">{{ orden.fechaEntregaReal ? (orden.fechaEntregaReal | slice:0:10) : '—' }}</td>
-              <td class="px-4 py-3">S/ {{ orden.costoTotal }}</td>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-4">Orden</th>
+              <th class="px-6 py-4">Cliente</th>
+              <th class="px-6 py-4">Dispositivo</th>
+              <th class="px-6 py-4">Técnico Responsable</th>
+              <th class="px-6 py-4">Ingreso</th>
+              <th class="px-6 py-4">Entrega</th>
+              <th class="px-6 py-4">Costo Cerrado</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (orden of ordenesFiltradas; track orden.id) {
+              <tr
+                class="hover:bg-slate-50/50 transition-colors cursor-pointer"
+                [routerLink]="['/ordenes', orden.id]"
+              >
+                <!-- Orden -->
+                <td class="px-6 py-4 font-mono font-semibold text-brand-600">{{ orden.codigoUnico }}</td>
+                
+                <!-- Cliente -->
+                <td class="px-6 py-4 font-medium text-slate-900">{{ nombreCliente(orden) }}</td>
+                
+                <!-- Dispositivo -->
+                <td class="px-6 py-4 text-slate-600 font-medium">
+                  {{ orden.equipo.tipoEquipo.nombre }} — {{ orden.equipo.marca }} {{ orden.equipo.modelo }}
+                </td>
+                
+                <!-- Técnico -->
+                <td class="px-6 py-4 text-slate-600">
+                  <div class="flex items-center space-x-2.5">
+                    <div class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-500">
+                      {{ nombreTecnico(orden).split(' ')[0][0] }}
+                    </div>
+                    <span>{{ nombreTecnico(orden) }}</span>
+                  </div>
+                </td>
+                
+                <!-- Ingreso -->
+                <td class="px-6 py-4 text-slate-500 font-medium">{{ orden.fechaIngreso | slice:0:10 }}</td>
+                
+                <!-- Entrega -->
+                <td class="px-6 py-4 text-slate-550 font-medium">
+                  @if (orden.fechaEntregaReal) {
+                    <span>{{ orden.fechaEntregaReal | slice:0:10 }}</span>
+                  } @else {
+                    <span class="text-slate-400 italic">—</span>
+                  }
+                </td>
+                
+                <!-- Costo Total -->
+                <td class="px-6 py-4 font-mono font-extrabold text-emerald-700">
+                  S/ {{ orden.costoTotal }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     }
   </div>
 </div>

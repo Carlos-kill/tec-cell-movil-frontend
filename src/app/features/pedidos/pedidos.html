@@ -1,170 +1,302 @@
-<div>
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-slate-800">Pedidos de Repuestos</h1>
+<div class="space-y-6">
+  <!-- Cabecera de Página -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Pedidos de Repuestos</h1>
+      <p class="text-xs text-slate-500 mt-1">Monitorea la adquisición, recepción e instalación de piezas de repuesto asociadas a las órdenes de trabajo.</p>
+    </div>
+    
     <button
       (click)="abrirPanel()"
-      class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+      class="inline-flex items-center justify-center bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4.5 py-2.5 rounded-xl shadow-md shadow-brand-500/10 hover:shadow-lg transition-all space-x-2 cursor-pointer border-0 outline-none"
     >
-      + Nuevo Pedido
+      <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      <span>Nuevo Pedido</span>
     </button>
   </div>
 
-  <div class="mb-4">
-    <input
-      type="text"
-      [(ngModel)]="textoBusqueda"
-      placeholder="Buscar por repuesto, proveedor o código de orden..."
-      class="w-full max-w-md rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
+  <!-- Barra de Filtros y Búsqueda -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="relative max-w-md w-full">
+      <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="textoBusqueda"
+        placeholder="Buscar por repuesto, proveedor o código de orden..."
+        class="w-full text-xs bg-slate-55 border border-slate-200 pl-9 pr-4 py-2.5 rounded-xl placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+      />
+    </div>
+    
+    <div class="flex items-center space-x-2 text-xs text-slate-500">
+      <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+      <span>Pendientes de confirmación gatillan alerta</span>
+    </div>
   </div>
 
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <!-- Tabla Principal de Repuestos -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
     @if (cargando()) {
-      <p class="p-6 text-slate-500 text-sm">Cargando...</p>
+      <div class="flex flex-col items-center justify-center py-20 space-y-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-500 border-t-transparent"></div>
+        <p class="text-xs text-slate-400 font-medium">Buscando solicitudes de piezas...</p>
+      </div>
     } @else if (pedidosFiltrados.length === 0) {
-      <p class="p-6 text-slate-500 text-sm">No hay pedidos registrados.</p>
+      <div class="flex flex-col items-center justify-center py-16 text-slate-500 text-sm space-y-2">
+        <svg class="w-10 h-10 text-slate-350" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        <p class="font-medium text-slate-650">No hay pedidos registrados en este momento.</p>
+        <p class="text-xs text-slate-400">Prueba cambiando la búsqueda o crea un nuevo pedido.</p>
+      </div>
     } @else {
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-500 text-left">
-          <tr>
-            <th class="px-4 py-3">Orden</th>
-            <th class="px-4 py-3">Repuesto</th>
-            <th class="px-4 py-3">Proveedor</th>
-            <th class="px-4 py-3">Fecha pedido</th>
-            <th class="px-4 py-3">Precio</th>
-            <th class="px-4 py-3">Llegada</th>
-            <th class="px-4 py-3">Instalado</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (pedido of pedidosFiltrados; track pedido.id) {
-            <tr class="border-t border-slate-100 hover:bg-slate-50">
-              <td class="px-4 py-3 font-medium text-blue-600">{{ pedido.orden?.codigoUnico }}</td>
-              <td class="px-4 py-3">{{ pedido.nombreRepuesto }}</td>
-              <td class="px-4 py-3">{{ pedido.proveedor?.nombre }}</td>
-              <td class="px-4 py-3 text-slate-500">{{ pedido.fechaSolicitud | slice:0:16 }}</td>
-              <td class="px-4 py-3">{{ pedido.precio ? 'S/ ' + pedido.precio : '—' }}</td>
-              <td class="px-4 py-3 text-slate-500">
-                {{ pedido.fechaLlegada ? (pedido.fechaLlegada | slice:0:16) : '—' }}
-              </td>
-              
-              <td class="px-4 py-3">
-                @if (!pedido.fechaLlegada) {
-                  <button
-                    (click)="marcarLlegada(pedido)"
-                    class="bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-medium px-2 py-1 rounded transition"
-                  >
-                    Confirmar llegada
-                  </button>
-                } @else {
-                  <label class="flex items-center gap-2" [class.cursor-not-allowed]="pedido.instalado">
-                    <input 
-                      type="checkbox" 
-                      [checked]="pedido.instalado" 
-                      [disabled]="pedido.instalado" 
-                      (click)="marcarInstalado(pedido, $event)" 
-                      class="disabled:opacity-50"
-                    />
-                    <span
-                      class="text-xs font-medium px-2 py-1 rounded-full"
-                      [class.bg-green-100]="pedido.instalado"
-                      [class.text-green-700]="pedido.instalado"
-                      [class.bg-amber-100]="!pedido.instalado"
-                      [class.text-amber-700]="!pedido.instalado"
-                    >
-                      {{ pedido.instalado ? 'Instalado' : 'Pendiente' }}
-                    </span>
-                  </label>
-                }
-              </td>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-4">Orden</th>
+              <th class="px-6 py-4">Repuesto</th>
+              <th class="px-6 py-4">Proveedor</th>
+              <th class="px-6 py-4">Fecha pedido</th>
+              <th class="px-6 py-4">Precio</th>
+              <th class="px-6 py-4">Llegada</th>
+              <th class="px-6 py-4">Estado Instalación</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (pedido of pedidosFiltrados; track pedido.id) {
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <!-- Orden -->
+                <td class="px-6 py-4 font-mono font-semibold text-brand-600">
+                  <a [routerLink]="['/ordenes', pedido.orden?.id]" class="hover:underline">
+                    {{ pedido.orden?.codigoUnico }}
+                  </a>
+                </td>
+                
+                <!-- Repuesto -->
+                <td class="px-6 py-4 font-medium text-slate-800">
+                  <div>
+                    <p>{{ pedido.nombreRepuesto }}</p>
+                    @if (pedido.descripcion) {
+                      <p class="text-[10px] text-slate-400 font-normal mt-0.5">{{ pedido.descripcion }}</p>
+                    }
+                  </div>
+                </td>
+                
+                <!-- Proveedor -->
+                <td class="px-6 py-4 text-slate-600 font-medium">{{ pedido.proveedor?.nombre }}</td>
+                
+                <!-- Fecha Pedido -->
+                <td class="px-6 py-4 text-slate-500 font-medium">{{ pedido.fechaSolicitud | slice:0:16 }}</td>
+                
+                <!-- Precio -->
+                <td class="px-6 py-4 font-mono font-bold text-slate-800">
+                  {{ pedido.precio ? 'S/ ' + pedido.precio : '—' }}
+                </td>
+                
+                <!-- Llegada -->
+                <td class="px-6 py-4 text-slate-500 font-medium">
+                  @if (pedido.fechaLlegada) {
+                    <span>{{ pedido.fechaLlegada | slice:0:16 }}</span>
+                  } @else {
+                    <span class="text-amber-500 font-semibold flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                      <span>En tránsito</span>
+                    </span>
+                  }
+                </td>
+                
+                <!-- Instalado -->
+                <td class="px-6 py-4">
+                  @if (!pedido.fechaLlegada) {
+                    <button
+                      (click)="marcarLlegada(pedido)"
+                      class="inline-flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-amber-200/60 transition-all cursor-pointer"
+                    >
+                      Confirmar Llegada
+                    </button>
+                  } @else {
+                    <div class="flex items-center space-x-3.5">
+                      <label 
+                        class="flex items-center gap-2 cursor-pointer group" 
+                        [class.cursor-not-allowed]="pedido.instalado"
+                      >
+                        <input 
+                          type="checkbox" 
+                          [checked]="pedido.instalado" 
+                          [disabled]="pedido.instalado" 
+                          (click)="marcarInstalado(pedido, $event)" 
+                          class="w-3.5 h-3.5 text-brand-600 border-slate-300 rounded focus:ring-brand-500/20 disabled:opacity-55 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                        <span
+                          class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border transition-colors select-none"
+                          [class.bg-emerald-50]="pedido.instalado"
+                          [class.text-emerald-700]="pedido.instalado"
+                          [class.border-emerald-100]="pedido.instalado"
+                          [class.bg-amber-50]="!pedido.instalado"
+                          [class.text-amber-700]="!pedido.instalado"
+                          [class.border-amber-100]="!pedido.instalado"
+                        >
+                          {{ pedido.instalado ? 'Instalado' : 'Pendiente' }}
+                        </span>
+                      </label>
+                    </div>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     }
   </div>
 
-  <!-- DRAWER lateral -->
+  <!-- DRAWER LATERAL (Panel Deslizable) -->
   @if (mostrarPanel()) {
     <!-- Fondo oscuro -->
-    <div class="fixed inset-0 bg-black/40 z-40" (click)="cerrarPanel()"></div>
+    <div 
+      class="fixed inset-0 bg-navy-950/40 backdrop-blur-sm z-40 transition-opacity duration-300" 
+      (click)="cerrarPanel()"
+    ></div>
 
     <!-- Panel deslizante -->
     <div
-      class="fixed top-0 right-0 h-full w-full bg-white shadow-2xl z-50 flex flex-col transition-all duration-300"
+      class="fixed top-0 right-0 h-full w-full bg-white shadow-2xl z-50 flex flex-col transition-all duration-300 ease-out border-l border-slate-200 animate-slide-in-right"
       [class.max-w-md]="!ordenEncontrada()"
       [class.max-w-4xl]="ordenEncontrada()"
     >
 
-      <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200">
-        <h2 class="text-lg font-bold text-slate-800">Nuevo pedido de repuesto</h2>
-        <button (click)="cerrarPanel()" class="text-slate-400 hover:text-slate-700 text-2xl leading-none">×</button>
+      <!-- Cabecera del Panel -->
+      <div class="flex h-16 items-center justify-between px-6 border-b border-slate-200 bg-slate-50/20">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Nuevo pedido de repuesto</h2>
+        <button 
+          (click)="cerrarPanel()" 
+          class="p-1 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-650 cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
 
+      <!-- Cuerpo del Panel (Grid si hay orden) -->
       <div class="flex-1 overflow-y-auto grid grid-cols-1" [class.md:grid-cols-2]="ordenEncontrada()">
 
         <!-- Columna izquierda: buscar + formulario -->
-        <div class="p-6 border-r border-slate-100">
-
-          <label class="block text-xs font-medium text-slate-600 mb-1">Buscar orden por código</label>
-          <div class="flex gap-2 mb-4">
-            <input
-              type="text"
-              [(ngModel)]="codigoOrden"
-              [ngModelOptions]="{standalone: true}"
-              (keyup.enter)="buscarOrden()"
-              placeholder="OT-2026-00001"
-              class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
-            <button
-              (click)="buscarOrden()"
-              [disabled]="buscandoOrden()"
-              class="bg-slate-700 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
-            >
-              Buscar
-            </button>
-          </div>
-          @if (errorBusquedaOrden()) {
-            <p class="text-red-600 text-sm mb-3">{{ errorBusquedaOrden() }}</p>
-          }
-
-          <p class="text-xs text-slate-400 mb-2">O selecciona una orden activa reciente:</p>
-          <div class="space-y-1 mb-6 max-h-40 overflow-y-auto">
-            @for (orden of sugerenciasFiltradas; track orden.id) {
+        <div class="p-6 space-y-5 border-r border-slate-100">
+          
+          <!-- Búsqueda por Código -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-650 mb-1.5">Buscar orden por código</label>
+            <div class="flex gap-2">
+              <input
+                type="text"
+                [(ngModel)]="codigoOrden"
+                [ngModelOptions]="{standalone: true}"
+                (keyup.enter)="buscarOrden()"
+                placeholder="OT-2026-00001"
+                class="flex-1 rounded-xl border border-slate-200/80 px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono"
+              />
               <button
-                type="button"
-                (click)="previsualizar(orden)"
-                class="w-full text-left px-3 py-2 rounded-lg text-sm border transition"
-                [class.border-blue-400]="ordenEncontrada()?.id === orden.id"
-                [class.bg-blue-50]="ordenEncontrada()?.id === orden.id"
-                [class.border-slate-200]="ordenEncontrada()?.id !== orden.id"
+                (click)="buscarOrden()"
+                [disabled]="buscandoOrden()"
+                class="bg-slate-800 hover:bg-slate-900 disabled:bg-slate-200 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
               >
-                <span class="font-medium text-blue-600">{{ orden.codigoUnico }}</span>
-                <span class="text-slate-500"> — {{ nombreCliente(orden) }}</span>
+                Buscar
               </button>
+            </div>
+            @if (errorBusquedaOrden()) {
+              <p class="text-[10px] text-red-650 font-semibold mt-1.5 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <span>{{ errorBusquedaOrden() }}</span>
+              </p>
             }
           </div>
 
-          <hr class="mb-6" />
+          <!-- Sugerencias Activas Recientes -->
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Órdenes activas recientes:</p>
+            <div class="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+              @for (orden of sugerenciasFiltradas; track orden.id) {
+                <button
+                  type="button"
+                  (click)="previsualizar(orden)"
+                  class="w-full text-left px-3 py-2 rounded-xl text-xs border transition-all cursor-pointer flex items-center justify-between"
+                  [class.border-brand-500]="ordenEncontrada()?.id === orden.id"
+                  [class.bg-brand-50/40]="ordenEncontrada()?.id === orden.id"
+                  [class.text-brand-850]="ordenEncontrada()?.id === orden.id"
+                  [class.border-slate-200]="ordenEncontrada()?.id !== orden.id"
+                  [class.text-slate-650]="ordenEncontrada()?.id !== orden.id"
+                  [class.hover:bg-slate-50]="ordenEncontrada()?.id !== orden.id"
+                >
+                  <span class="font-mono font-semibold">{{ orden.codigoUnico }}</span>
+                  <span class="text-[10px] text-slate-400 truncate max-w-[150px]">{{ nombreCliente(orden) }}</span>
+                </button>
+              }
+            </div>
+          </div>
 
+          <hr class="border-slate-100" />
+
+          <!-- Formulario de Creación -->
           @if (ordenEncontrada()) {
-            <form [formGroup]="form" class="space-y-3">
-              <select formControlName="proveedorId" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
-                <option [ngValue]="null">Selecciona proveedor *</option>
-                @for (prov of proveedores(); track prov.id) {
-                  <option [ngValue]="prov.id">{{ prov.nombre }}</option>
-                }
-              </select>
-              <input formControlName="nombreRepuesto" placeholder="Nombre del repuesto *" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              <input formControlName="descripcion" placeholder="Descripción" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-              <input formControlName="precio" type="number" placeholder="Precio (S/)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <form [formGroup]="form" class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-650 mb-1.5">Proveedor *</label>
+                <select 
+                  formControlName="proveedorId" 
+                  class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer"
+                >
+                  <option [ngValue]="null">Selecciona proveedor</option>
+                  @for (prov of proveedores(); track prov.id) {
+                    <option [ngValue]="prov.id">{{ prov.nombre }}</option>
+                  }
+                </select>
+              </div>
 
-              <p class="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                ⚠ Al guardar, la orden cambiará automáticamente a "En espera de repuestos".
-              </p>
+              <div>
+                <label class="block text-xs font-semibold text-slate-650 mb-1.5">Nombre del Repuesto *</label>
+                <input 
+                  formControlName="nombreRepuesto" 
+                  placeholder="Ej. Pantalla OLED iPhone 13" 
+                  class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-650 mb-1.5">Descripción o Notas</label>
+                <input 
+                  formControlName="descripcion" 
+                  placeholder="Detalles específicos (opcional)" 
+                  class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-650 mb-1.5">Precio (S/)</label>
+                <input 
+                  formControlName="precio" 
+                  type="number" 
+                  placeholder="S/ 0.00" 
+                  class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono" 
+                />
+              </div>
+
+              <!-- Alerta Automática de Flujo -->
+              <div class="flex items-start gap-2.5 p-3.5 bg-amber-55/40 border border-amber-100 rounded-xl text-xs text-amber-800">
+                <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span class="leading-relaxed">Al registrar este pedido, la orden cambiará automáticamente al estado: <span class="font-bold">"En espera de repuestos"</span>.</span>
+              </div>
 
               @if (errorMensaje()) {
-                <div class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <div class="text-red-750 text-xs bg-red-50 border border-red-100 rounded-xl p-3">
                   {{ errorMensaje() }}
                 </div>
               }
@@ -173,63 +305,78 @@
                 type="button"
                 (click)="registrarPedido()"
                 [disabled]="form.invalid || guardando()"
-                class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-medium py-2.5 rounded-lg transition"
+                class="w-full inline-flex items-center justify-center bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 text-white text-xs font-semibold py-2.5 rounded-xl shadow-md shadow-brand-500/10 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
               >
-                {{ guardando() ? 'Guardando...' : 'Registrar pedido' }}
+                @if (guardando()) {
+                  <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mr-2"></span>
+                  <span>Guardando...</span>
+                } @else {
+                  <span>Registrar Pedido</span>
+                }
               </button>
             </form>
           } @else {
-            <p class="text-sm text-slate-400 text-center py-8">Busca o selecciona una orden para continuar.</p>
+            <div class="flex flex-col items-center justify-center py-12 text-slate-400 text-xs text-center space-y-2">
+              <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <p class="font-medium text-slate-500">Búsqueda Requerida</p>
+              <p class="max-w-[200px]">Busca o selecciona una orden de la lista para poder ingresar el pedido de repuestos.</p>
+            </div>
           }
         </div>
 
-        <!-- Columna derecha: vista previa en vivo -->
+        <!-- Columna derecha: vista previa en vivo (Ficha Resumen) -->
         @if (ordenEncontrada()) {
-        <div class="p-6 bg-slate-50">
-          <h3 class="text-sm font-semibold text-slate-500 uppercase mb-4">Vista previa</h3>
-            <div class="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+          <div class="p-6 bg-slate-50/50 flex flex-col justify-start">
+            <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-4">Vista Previa de la Orden</h3>
+            
+            <div class="bg-white rounded-2xl border border-slate-200/80 p-5 space-y-4 text-xs shadow-sm">
               <div>
-                <p class="text-xs text-slate-500">Código de orden</p>
-                <p class="text-xl font-bold text-blue-600">{{ ordenEncontrada()!.codigoUnico }}</p>
-                <span class="inline-block mt-1 bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
+                <p class="text-slate-400 font-medium">Código único</p>
+                <p class="text-lg font-mono font-bold text-brand-650 mt-0.5">{{ ordenEncontrada()!.codigoUnico }}</p>
+                <span class="inline-block mt-1.5 bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-100">
                   {{ ordenEncontrada()!.estadoActual.nombre }}
                 </span>
               </div>
 
-              <div>
-                <p class="text-xs text-slate-500">Cliente</p>
-                <p class="font-medium text-slate-800">{{ nombreCliente(ordenEncontrada()!) }}</p>
+              <div class="border-t border-slate-100 pt-3">
+                <p class="text-slate-400 font-medium">Cliente</p>
+                <p class="font-bold text-slate-800 mt-0.5">{{ nombreCliente(ordenEncontrada()!) }}</p>
               </div>
 
-              <div>
-                <p class="text-xs text-slate-500">Equipo</p>
-                <p class="font-medium text-slate-800">
+              <div class="border-t border-slate-100 pt-3">
+                <p class="text-slate-400 font-medium">Equipo a Reparar</p>
+                <p class="font-semibold text-slate-800 mt-0.5">
                   {{ ordenEncontrada()!.equipo.tipoEquipo.nombre }} — {{ ordenEncontrada()!.equipo.marca }} {{ ordenEncontrada()!.equipo.modelo }}
                 </p>
                 @if (ordenEncontrada()!.equipo.numeroSerieImei) {
-                  <p class="text-xs text-slate-500">N° serie/IMEI: {{ ordenEncontrada()!.equipo.numeroSerieImei }}</p>
+                  <p class="text-[10px] font-mono text-slate-400 mt-0.5">Serie/IMEI: {{ ordenEncontrada()!.equipo.numeroSerieImei }}</p>
                 }
               </div>
 
-              <div>
-                <p class="text-xs text-slate-500">Falla reportada</p>
-                <p class="text-sm text-slate-700">{{ ordenEncontrada()!.equipo.fallaReportada }}</p>
+              <div class="border-t border-slate-100 pt-3">
+                <p class="text-slate-400 font-medium">Falla Reportada</p>
+                <p class="text-slate-650 mt-1 leading-relaxed bg-slate-50 rounded-lg p-2.5">{{ ordenEncontrada()!.equipo.fallaReportada }}</p>
               </div>
 
-              <div>
-                <p class="text-xs text-slate-500">Técnico asignado</p>
-                <p class="text-sm text-slate-700">
-                  {{ ordenEncontrada()!.tecnicoAsignado.persona.nombre }} {{ ordenEncontrada()!.tecnicoAsignado.persona.apellidoPaterno }}
-                </p>
+              <div class="border-t border-slate-100 pt-3">
+                <p class="text-slate-400 font-medium">Técnico Asignado</p>
+                <div class="flex items-center space-x-2 mt-1">
+                  <div class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-500">
+                    {{ ordenEncontrada()!.tecnicoAsignado.persona.nombre.split(' ')[0][0] }}
+                  </div>
+                  <span class="font-semibold text-slate-700">{{ ordenEncontrada()!.tecnicoAsignado.persona.nombre }} {{ ordenEncontrada()!.tecnicoAsignado.persona.apellidoPaterno }}</span>
+                </div>
               </div>
 
-              <div>
-                <p class="text-xs text-slate-500">Fecha de ingreso</p>
-                <p class="text-sm text-slate-700">{{ ordenEncontrada()!.fechaIngreso | slice:0:16 }}</p>
+              <div class="border-t border-slate-100 pt-3">
+                <p class="text-slate-400 font-medium">Ingreso</p>
+                <p class="font-semibold text-slate-600 mt-0.5">{{ ordenEncontrada()!.fechaIngreso | slice:0:16 }}</p>
               </div>
             </div>
-            </div>
-          }
+          </div>
+        }
       </div>
     </div>
   }

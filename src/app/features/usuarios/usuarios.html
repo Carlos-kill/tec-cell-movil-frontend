@@ -1,71 +1,136 @@
-<div>
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-slate-800">Usuarios del sistema</h1>
+<div class="space-y-6">
+  <!-- Cabecera de Página -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Usuarios del Sistema</h1>
+      <p class="text-xs text-slate-500 mt-1">Administra el personal del taller técnico, asigna roles de acceso y gestiona sus credenciales de seguridad.</p>
+    </div>
+    
     <button
       (click)="abrirFormulario()"
-      class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition"
+      class="inline-flex items-center justify-center bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4.5 py-2.5 rounded-xl shadow-md shadow-brand-500/10 hover:shadow-lg transition-all space-x-2 cursor-pointer border-0 outline-none"
     >
-      + Nuevo usuario
+      <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z" />
+      </svg>
+      <span>Nuevo Usuario</span>
     </button>
   </div>
 
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <!-- Tabla de Usuarios -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
     @if (cargando()) {
-      <p class="p-6 text-slate-500 text-sm">Cargando...</p>
+      <div class="flex flex-col items-center justify-center py-20 space-y-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-500 border-t-transparent"></div>
+        <p class="text-xs text-slate-400 font-medium">Buscando usuarios registrados...</p>
+      </div>
     } @else if (usuarios().length === 0) {
-      <p class="p-6 text-slate-500 text-sm">No hay usuarios registrados.</p>
+      <div class="flex flex-col items-center justify-center py-16 text-slate-500 text-sm space-y-2">
+        <svg class="w-10 h-10 text-slate-350" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <p class="font-medium text-slate-650">No hay usuarios registrados.</p>
+        <p class="text-xs text-slate-400">Crea una cuenta para permitir el acceso a un técnico o administrador.</p>
+      </div>
     } @else {
-      <table class="w-full text-sm">
-        <thead class="bg-slate-50 text-slate-500 text-left">
-          <tr>
-            <th class="px-4 py-3">Usuario</th>
-            <th class="px-4 py-3">Nombre</th>
-            <th class="px-4 py-3">Rol</th>
-            <th class="px-4 py-3">Estado</th>
-            <th class="px-4 py-3"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (usuario of usuarios(); track usuario.id) {
-            <tr class="border-t border-slate-100 hover:bg-slate-50">
-              <td class="px-4 py-3 font-medium text-slate-800">{{ usuario.usuario }}</td>
-              <td class="px-4 py-3">{{ nombreCompleto(usuario) }}</td>
-              <td class="px-4 py-3">
-                <span class="bg-slate-100 text-slate-600 text-xs font-medium px-2 py-1 rounded-full">{{ usuario.rol }}</span>
-              </td>
-              <td class="px-4 py-3">
-                @if (usuario.estado) {
-                  <span class="bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">Activo</span>
-                } @else {
-                  <span class="bg-slate-100 text-slate-500 text-xs font-medium px-2 py-1 rounded-full">Inactivo</span>
-                }
-              </td>
-              <td class="px-4 py-3">
-                <button (click)="toggleEstado(usuario)" class="text-xs text-blue-600 hover:underline">
-                  {{ usuario.estado ? 'Dar de baja' : 'Reactivar' }}
-                </button>
-              </td>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-4">Usuario (Login)</th>
+              <th class="px-6 py-4">Nombre Completo</th>
+              <th class="px-6 py-4">Rol</th>
+              <th class="px-6 py-4">Estado</th>
+              <th class="px-6 py-4">Acciones</th>
             </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (usuario of usuarios(); track usuario.id) {
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <!-- Login -->
+                <td class="px-6 py-4 font-mono font-semibold text-slate-800">{{ usuario.usuario }}</td>
+                
+                <!-- Nombre -->
+                <td class="px-6 py-4 font-bold text-slate-900">{{ nombreCompleto(usuario) }}</td>
+                
+                <!-- Rol -->
+                <td class="px-6 py-4">
+                  <span 
+                    class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
+                    [class.bg-brand-50]="usuario.rol === 'ADMINISTRADOR'"
+                    [class.text-brand-700]="usuario.rol === 'ADMINISTRADOR'"
+                    [class.border-brand-100]="usuario.rol === 'ADMINISTRADOR'"
+                    [class.bg-slate-50]="usuario.rol !== 'ADMINISTRADOR'"
+                    [class.text-slate-600]="usuario.rol !== 'ADMINISTRADOR'"
+                    [class.border-slate-200]="usuario.rol !== 'ADMINISTRADOR'"
+                  >
+                    {{ usuario.rol }}
+                  </span>
+                </td>
+                
+                <!-- Estado -->
+                <td class="px-6 py-4">
+                  <span 
+                    class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
+                    [class.bg-emerald-50]="usuario.estado"
+                    [class.text-emerald-700]="usuario.estado"
+                    [class.border-emerald-100]="usuario.estado"
+                    [class.bg-rose-50]="!usuario.estado"
+                    [class.text-rose-700]="!usuario.estado"
+                    [class.border-rose-100]="!usuario.estado"
+                  >
+                    {{ usuario.estado ? 'Activo' : 'Baja / Inactivo' }}
+                  </span>
+                </td>
+                
+                <!-- Acciones -->
+                <td class="px-6 py-4">
+                  <button 
+                    (click)="toggleEstado(usuario)" 
+                    class="text-[10px] font-bold cursor-pointer border-0 outline-none bg-transparent"
+                    [class.text-rose-650]="usuario.estado"
+                    [class.hover:text-rose-750]="usuario.estado"
+                    [class.text-brand-650]="!usuario.estado"
+                    [class.hover:text-brand-750]="!usuario.estado"
+                  >
+                    {{ usuario.estado ? 'Dar de baja' : 'Reactivar usuario' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
     }
   </div>
 
+  <!-- Formulario modal de nuevo usuario -->
   @if (mostrarFormulario()) {
-    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-4">Nuevo usuario</h2>
+    <div class="fixed inset-0 bg-navy-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-slate-200/80 overflow-hidden animate-fade-in">
+        
+        <!-- Cabecera Modal -->
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10">
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Nuevo Usuario del Sistema</h2>
+          <p class="text-xs text-slate-400 mt-1">Crea un registro de personal técnico o administrativo para el acceso al panel.</p>
+        </div>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-3">
-          <div class="grid grid-cols-2 gap-3">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4 p-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">DNI *</label>
-              <input formControlName="dni" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">DNI *</label>
+              <input 
+                formControlName="dni" 
+                placeholder="Ingresa DNI" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono" 
+              />
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Rol *</label>
-              <select formControlName="rol" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Rol *</label>
+              <select 
+                formControlName="rol" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer"
+              >
                 <option value="TECNICO">Técnico</option>
                 <option value="ADMINISTRADOR">Administrador</option>
               </select>
@@ -73,57 +138,104 @@
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-slate-600 mb-1">Nombre *</label>
-            <input formControlName="nombre" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <label class="block text-xs font-semibold text-slate-650 mb-1.5">Nombre *</label>
+            <input 
+              formControlName="nombre" 
+              placeholder="Nombres completos" 
+              class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+            />
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Apellido paterno *</label>
-              <input formControlName="apellidoPaterno" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Apellido Paterno *</label>
+              <input 
+                formControlName="apellidoPaterno" 
+                placeholder="Primer apellido" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+              />
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Apellido materno</label>
-              <input formControlName="apellidoMaterno" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Teléfono</label>
-              <input formControlName="telefono" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Correo</label>
-              <input formControlName="correo" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Apellido Materno</label>
+              <input 
+                formControlName="apellidoMaterno" 
+                placeholder="Segundo apellido" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+              />
             </div>
           </div>
 
-          <hr class="my-2" />
-
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Usuario (login) *</label>
-              <input formControlName="usuario" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Teléfono</label>
+              <input 
+                formControlName="telefono" 
+                placeholder="Contacto" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+              />
             </div>
             <div>
-              <label class="block text-xs font-medium text-slate-600 mb-1">Contraseña *</label>
-              <input formControlName="password" type="password" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Correo</label>
+              <input 
+                formControlName="correo" 
+                type="email" 
+                placeholder="Correo electrónico" 
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+              />
+            </div>
+          </div>
+
+          <hr class="border-slate-100" />
+
+          <!-- Credenciales de Login -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-200/60">
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Usuario (Login) *</label>
+              <input 
+                formControlName="usuario" 
+                placeholder="Nombre de usuario" 
+                class="w-full rounded-xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono" 
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Contraseña *</label>
+              <input 
+                formControlName="password" 
+                type="password" 
+                placeholder="••••••••" 
+                class="w-full rounded-xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
+              />
             </div>
           </div>
 
           @if (errorMensaje()) {
-            <div class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {{ errorMensaje() }}
+            <div class="flex items-start space-x-2 text-red-750 text-xs bg-red-50 border border-red-100 rounded-xl p-3">
+              <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{{ errorMensaje() }}</span>
             </div>
           }
 
-          <div class="flex gap-2 pt-2">
-            <button type="button" (click)="cerrarFormulario()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium py-2 rounded-lg transition">
+          <!-- Acciones del Modal -->
+          <div class="flex gap-3 pt-2">
+            <button
+              type="button"
+              (click)="cerrarFormulario()"
+              class="flex-1 border border-slate-250 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold py-2.5 rounded-xl cursor-pointer"
+            >
               Cancelar
             </button>
-            <button type="submit" [disabled]="form.invalid || guardando()" class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white text-sm font-medium py-2 rounded-lg transition">
-              {{ guardando() ? 'Guardando...' : 'Guardar' }}
+            <button
+              type="submit"
+              [disabled]="form.invalid || guardando()"
+              class="flex-1 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 text-white text-xs font-semibold py-2.5 rounded-xl shadow-md shadow-brand-500/10 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
+            >
+              @if (guardando()) {
+                <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mx-auto"></span>
+              } @else {
+                <span>Crear Cuenta</span>
+              }
             </button>
           </div>
         </form>

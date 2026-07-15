@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { EnvioService } from '../../core/services/envio.service';
 import { OrdenService } from '../../core/services/orden.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -10,7 +11,7 @@ import { OrdenTrabajo } from '../../core/models/orden.model';
 @Component({
   selector: 'app-envios',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './envios.html',
   styleUrl: './envios.css',
 })
