@@ -148,13 +148,13 @@
             <div class="space-y-2">
               @for (estado of estadosValidos(); track estado.id) {
                 
-                @if (orden()!.estadoActual.nombre === 'En espera de repuesto' && repuestosPendientesLlegada) {
+                @if (orden()!.estadoActual.nombre === 'En espera de repuestos' && repuestosPendientesLlegada) {
                   <p class="text-amber-600 text-xs mb-2">
                     ⚠️ Confirma la llegada de todos los repuestos para continuar a {{ estado.nombre }}.
                   </p>
                 }
 
-                @if (orden()!.estadoActual.nombre === 'En reparación' && estado.nombre === 'Listo para entrega' && repuestosPendientesInstalar) {
+                @if (orden()!.estadoActual.nombre === 'En reparación' && estado.nombre === 'Reparación finalizada' && repuestosPendientesInstalar) {
                   <p class="text-amber-600 text-xs mb-2">
                     ⚠️ Marca los repuestos como "Instalados" en el módulo de Pedidos para poder entregar el equipo.
                   </p>
@@ -163,8 +163,8 @@
                 <button
                   (click)="avanzarA(estado.id)"
                   [disabled]="cambiandoEstado() || 
-                             (orden()!.estadoActual.nombre === 'En espera de repuesto' && repuestosPendientesLlegada) ||
-                             (orden()!.estadoActual.nombre === 'En reparación' && estado.nombre === 'Listo para entrega' && repuestosPendientesInstalar)"
+                             (orden()!.estadoActual.nombre === 'En espera de repuestos' && repuestosPendientesLlegada) ||
+                             (orden()!.estadoActual.nombre === 'En reparación' && estado.nombre === 'Reparación finalizada' && repuestosPendientesInstalar)"
                   class="w-full bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded-lg transition"
                 >
                   {{ cambiandoEstado() ? 'Actualizando...' : '→ ' + estado.nombre }}

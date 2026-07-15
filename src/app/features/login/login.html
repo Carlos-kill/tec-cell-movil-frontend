@@ -1,47 +1,159 @@
-<div class="min-h-screen flex items-center justify-center bg-slate-100 px-4">
-  <div class="bg-white rounded-2xl shadow-md w-full max-w-sm p-8">
-
-    <div class="text-center mb-8">
-      <h1 class="text-2xl font-bold text-slate-800">Tec Cell Móvil</h1>
-      <p class="text-slate-500 text-sm mt-1">Sistema de Órdenes de Servicio Técnico</p>
+<div class="min-h-screen w-full flex flex-col md:flex-row font-sans relative overflow-hidden bg-white">
+  
+  <!-- Left Section: Technology Illustration (Full screen height/width half) -->
+  <div class="w-full md:w-1/2 bg-slate-950 p-8 md:p-16 lg:p-20 flex flex-col justify-between relative hidden md:flex text-white overflow-hidden min-h-screen">
+    <!-- Full background image cover -->
+    <img 
+      src="/assets/images/tech-login-bg.png" 
+      alt="Tec Cell Móvil Ilustración" 
+      class="absolute inset-0 w-full h-full object-cover z-0 opacity-50"
+    >
+    <!-- Gradient overlay for readability and color grading -->
+    <div class="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-blue-950/80 to-slate-950/90 z-1"></div>
+    
+    <!-- Decorative tech pattern overlay -->
+    <div class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none z-2"></div>
+    
+    <!-- Top badge -->
+    <div class="relative z-10">
+      <span class="text-xs font-semibold tracking-widest uppercase text-sky-400 bg-sky-500/10 px-3.5 py-1.5 rounded-full border border-sky-500/20 backdrop-blur-md">
+        Gestión de Servicio Técnico
+      </span>
+      <h2 class="text-4xl font-extrabold mt-8 leading-tight tracking-tight">
+        Innovación y Confianza <br>
+        <span class="bg-gradient-to-r from-sky-400 to-blue-400 bg-clip-text text-transparent">en cada Reparación</span>
+      </h2>
+      <p class="text-slate-300 text-base mt-4 max-w-md leading-relaxed">
+        Accede al panel administrativo para gestionar órdenes de trabajo, seguimiento de reparaciones y envíos de dispositivos de forma eficiente.
+      </p>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+    <!-- Empty spacer to showcase the background -->
+    <div class="flex-grow z-10"></div>
 
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Usuario</label>
-        <input
-          type="text"
-          formControlName="usuario"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Ingresa tu usuario"
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Contraseña</label>
-        <input
-          type="password"
-          formControlName="password"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Ingresa tu contraseña"
-        />
-      </div>
-
-      @if (errorMensaje) {
-        <div class="text-red-600 text-sm bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-          {{ errorMensaje }}
-        </div>
-      }
-
-      <button
-        type="submit"
-        [disabled]="form.invalid || cargando"
-        class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-medium py-2 rounded-lg transition"
-      >
-        {{ cargando ? 'Ingresando...' : 'Ingresar' }}
-      </button>
-
-    </form>
+    <!-- Footer Info -->
+    <div class="relative z-10 text-slate-400 text-xs flex justify-between items-center border-t border-slate-800/80 pt-5">
+      <span>© 2026 Tec Cell Móvil</span>
+      <span class="flex items-center space-x-1.5">
+        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+        <span>Sistemas Activos</span>
+      </span>
+    </div>
   </div>
+
+  <!-- Right Section: Login Form (Full screen height/width half) -->
+  <div class="w-full md:w-1/2 min-h-screen p-6 md:p-12 lg:p-16 flex flex-col justify-center bg-white relative">
+    <!-- Subtle tech light effects behind the form -->
+    <div class="absolute -top-40 -right-40 w-96 h-96 bg-sky-100/50 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-40 -left-20 w-80 h-80 bg-blue-50/40 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="max-w-sm w-full mx-auto relative z-10">
+      <!-- Top header -->
+      <div class="flex items-center space-x-2 text-blue-600 mb-6 md:mb-8">
+        <div class="w-9 h-9 rounded-lg bg-gradient-to-tr from-blue-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-6 15h9"></path>
+          </svg>
+        </div>
+        <span class="text-xl font-black tracking-tight text-slate-900">Tec Cell <span class="bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">Móvil</span></span>
+      </div>
+
+      <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-950 tracking-tight">Bienvenido de nuevo</h1>
+        <p class="text-slate-500 text-xs mt-1.5">Ingresa tus credenciales para acceder al sistema administrativo</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+        
+        <!-- Username input -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Usuario</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
+              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"></path>
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              formControlName="usuario" 
+              class="w-full rounded-xl border border-slate-200 pl-10 pr-3.5 py-2.5 text-sm text-slate-950 bg-slate-50/50 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100/60 focus:border-sky-500 transition-all duration-200" 
+              placeholder="Ingresa tu usuario"
+            >
+          </div>
+        </div>
+
+        <!-- Password input -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Contraseña</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 pointer-events-none">
+              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"></path>
+              </svg>
+            </span>
+            <input 
+              type="password" 
+              formControlName="password" 
+              class="w-full rounded-xl border border-slate-200 pl-10 pr-3.5 py-2.5 text-sm text-slate-950 bg-slate-50/50 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-100/60 focus:border-sky-500 transition-all duration-200" 
+              placeholder="Ingresa tu contraseña"
+            >
+          </div>
+        </div>
+
+        <!-- Remember & Forgot Password -->
+        <div class="flex items-center justify-between text-xs pt-1">
+          <label class="flex items-center space-x-2 cursor-pointer select-none text-slate-600 group">
+            <input 
+              type="checkbox" 
+              formControlName="recordar" 
+              class="w-3.5 h-3.5 text-blue-600 border-slate-350 rounded focus:ring-blue-500/20 focus:ring-2 focus:ring-offset-0 transition cursor-pointer"
+            >
+            <span class="group-hover:text-slate-900 transition">Recordar usuario</span>
+          </label>
+          <a 
+            (click)="onOlvidastePassword($event)" 
+            href="#" 
+            class="text-blue-600 hover:text-blue-700 font-semibold transition duration-150"
+          >
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+
+        <!-- Alert messages (Errors) -->
+        @if (errorMensaje) {
+          <div class="flex items-start space-x-2 text-red-700 text-xs bg-red-50 border border-red-100 rounded-xl px-3.5 py-3 animate-slide-up">
+            <svg class="w-4.5 h-4.5 flex-shrink-0 text-red-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0-10.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.75c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.57-.598-3.75h-.152c-3.196 0-6.1-1.249-8.25-3.286Zm0 13.036h.008v.008H12v-.008Z"></path>
+            </svg>
+            <span class="leading-relaxed">{{ errorMensaje }}</span>
+          </div>
+        }
+
+        <!-- Informational messages (Help) -->
+        @if (infoMensaje) {
+          <div class="flex items-start space-x-2 text-blue-700 text-xs bg-blue-50 border border-blue-100 rounded-xl px-3.5 py-3 animate-slide-up">
+            <svg class="w-4.5 h-4.5 flex-shrink-0 text-blue-500 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 1 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.852l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"></path>
+            </svg>
+            <span class="leading-relaxed">{{ infoMensaje }}</span>
+          </div>
+        }
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          [disabled]="form.invalid || cargando" 
+          class="w-full bg-gradient-to-r from-blue-600 to-sky-500 hover:from-blue-700 hover:to-sky-600 disabled:from-slate-100 disabled:to-slate-200 disabled:text-slate-400 text-white font-semibold py-2.5 rounded-xl transition duration-300 shadow-md shadow-blue-500/10 hover:shadow-lg hover:shadow-blue-500/25 flex items-center justify-center space-x-2 cursor-pointer disabled:cursor-not-allowed text-sm border-0 outline-none"
+        >
+          @if (cargando) {
+            <span class="animate-spin rounded-full h-4.5 w-4.5 border-2 border-white border-t-transparent"></span>
+          }
+          <span>{{ cargando ? 'Ingresando...' : 'Iniciar sesión' }}</span>
+        </button>
+
+      </form>
+    </div>
+  </div>
+
 </div>

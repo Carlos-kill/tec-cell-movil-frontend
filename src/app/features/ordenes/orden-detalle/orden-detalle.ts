@@ -107,7 +107,7 @@ export class OrdenDetalle implements OnInit {
     const estadoDestino = this.estadosValidos().find(e => e.id === estadoId);
     if (!estadoDestino) return;
 
-    if (estadoDestino.nombre === 'Listo para entrega') {
+    if (estadoDestino.nombre === 'Reparación finalizada') {
       // Abrimos el modal en vez del prompt()
       this.estadoDestinoPendiente.set(estadoDestino);
       this.costoManoObraInput.set(this.orden()?.costoTotal ? null : null);
