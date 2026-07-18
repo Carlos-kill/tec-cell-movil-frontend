@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Cliente, CrearClienteRequest } from '../models/cliente.model';
-import { Persona } from '../models/usuario.model';
+import { Persona } from '../models/persona.model';
 
 @Injectable({ providedIn: 'root' })
 export class ClienteService {
@@ -32,5 +32,9 @@ export class ClienteService {
 
   cambiarEstado(id: number, estado: boolean): Observable<Cliente> {
     return this.http.patch<Cliente>(`${this.base}/${id}/estado`, null, { params: { estado } });
+  }
+
+  actualizar(id: number, datos: any): Observable<Cliente> {
+    return this.http.put<Cliente>(`${this.base}/${id}`, datos);
   }
 }

@@ -42,14 +42,6 @@
                 </span>
               }
             </div>
-            @if (clienteExistente() && !buscandoCliente()) {
-              <p class="text-[10px] text-emerald-600 font-semibold mt-1.5 flex items-center gap-1">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
-                </svg>
-                Cliente existente, datos autocompletados
-              </p>
-            }
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-650 mb-1.5">Teléfono *</label>
@@ -235,15 +227,25 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-650 mb-1.5">Técnico Asignado *</label>
-          <select 
-            formControlName="tecnicoAsignadoId" 
-            class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer"
-          >
-            <option [ngValue]="null">Seleccionar técnico responsable</option>
-            @for (tecnico of tecnicos(); track tecnico.id) {
-              <option [ngValue]="tecnico.id">{{ tecnico.persona.nombre }} {{ tecnico.persona.apellidoPaterno }}</option>
-            }
-          </select>
+          @if (esAdmin) {
+            <select 
+              formControlName="tecnicoAsignadoId" 
+              class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer"
+            >
+              <option [ngValue]="null">Seleccionar técnico responsable</option>
+              @for (tecnico of tecnicos(); track tecnico.id) {
+                <option [ngValue]="tecnico.id">{{ tecnico.empleado.persona.nombre }} {{ tecnico.empleado.persona.apellidoPaterno }}</option>
+              }
+            </select>
+          } @else {
+            <div class="w-full rounded-xl border border-slate-200/80 bg-slate-100/60 px-3.5 py-2.5 text-xs text-slate-700 flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-[10px] flex-shrink-0">
+                {{ nombreUsuarioActual.split(' ')[0][0] }}
+              </span>
+              <span class="font-semibold">{{ nombreUsuarioActual }}</span>
+              <span class="text-slate-400">(tú)</span>
+            </div>
+          }
         </div>
 
         <div>
@@ -272,7 +274,7 @@
         <button
           type="submit"
           [disabled]="form.invalid || guardando()"
-          class="inline-flex items-center justify-center bg-brand-650 hover:bg-brand-700 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-semibold px-6 py-3 rounded-xl shadow-md shadow-brand-500/10 hover:shadow-lg disabled:shadow-none transition-all space-x-2 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
+          class="inline-flex items-center justify-center bg-brand-700 hover:brightness-110 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-semibold px-6 py-3 rounded-xl shadow-md shadow-brand-500/10 hover:shadow-lg disabled:shadow-none transition-all space-x-2 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
         >
           @if (guardando()) {
             <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent"></span>

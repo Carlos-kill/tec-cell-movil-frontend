@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { OrdenService } from '../../../core/services/orden.service';
 import { CatalogoService } from '../../../core/services/catalogo.service';
@@ -20,6 +20,7 @@ import { EnvioExterno, PedidoRepuesto } from '../../../core/models/envio-repuest
 })
 export class OrdenDetalle implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private ordenService = inject(OrdenService);
   private catalogoService = inject(CatalogoService);
   private envioService = inject(EnvioService);
@@ -43,6 +44,26 @@ export class OrdenDetalle implements OnInit {
   costoManoObraInput = signal<number | null>(null);
   errorModal = signal('');
 
+  // --- Acciones que redirigen a otro módulo (no son transiciones de estado) ---
+  private accionesPorEstado: Record<string, { label: string; ruta: string }[]> = {
+    'Aprobado': [
+      { label: 'Enviar a técnico externo', ruta: '/envios' },
+      { label: 'Solicitar repuesto', ruta: '/pedidos' },
+    ],
+    'En espera de repuestos': [
+      { label: 'Enviar a técnico externo', ruta: '/envios' },
+    ],
+  };
+
+  get accionesDisponibles(): { label: string; ruta: string }[] {
+    const nombreEstado = this.orden()?.estadoActual.nombre ?? '';
+    return this.accionesPorEstado[nombreEstado] ?? [];
+  }
+
+  irAModulo(ruta: string): void {
+    this.router.navigate([ruta], { queryParams: { ordenId: this.ordenId } });
+  }
+
   ngOnInit(): void {
     this.ordenId = Number(this.route.snapshot.paramMap.get('id'));
     this.catalogoService.listarEstadosOrden().subscribe(e => this.todosLosEstados.set(e));
@@ -61,7 +82,6 @@ export class OrdenDetalle implements OnInit {
     return this.repuestos().some(rep => !rep.instalado);
   }
 
-  // --- Cálculos para el desglose del modal ---
   totalRepuestos = computed(() =>
     this.repuestos().reduce((acc, r) => acc + (r.precio ?? 0), 0)
   );
@@ -108,9 +128,8 @@ export class OrdenDetalle implements OnInit {
     if (!estadoDestino) return;
 
     if (estadoDestino.nombre === 'Reparación finalizada') {
-      // Abrimos el modal en vez del prompt()
       this.estadoDestinoPendiente.set(estadoDestino);
-      this.costoManoObraInput.set(this.orden()?.costoTotal ? null : null);
+      this.costoManoObraInput.set(null);
       this.errorModal.set('');
       this.mostrarModalCosto.set(true);
     } else {

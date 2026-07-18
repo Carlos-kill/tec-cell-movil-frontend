@@ -3,9 +3,9 @@
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
     <div>
       <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Usuarios del Sistema</h1>
-      <p class="text-xs text-slate-500 mt-1">Administra el personal del taller técnico, asigna roles de acceso y gestiona sus credenciales de seguridad.</p>
+      <p class="text-xs text-slate-500 mt-1">Otorga acceso al panel a empleados ya registrados y gestiona sus credenciales de seguridad.</p>
     </div>
-    
+
     <button
       (click)="abrirFormulario()"
       class="inline-flex items-center justify-center bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4.5 py-2.5 rounded-xl shadow-md shadow-brand-500/10 hover:shadow-lg transition-all space-x-2 cursor-pointer border-0 outline-none"
@@ -39,6 +39,7 @@
             <tr>
               <th class="px-6 py-4">Usuario (Login)</th>
               <th class="px-6 py-4">Nombre Completo</th>
+              <th class="px-6 py-4">Cargo</th>
               <th class="px-6 py-4">Rol</th>
               <th class="px-6 py-4">Estado</th>
               <th class="px-6 py-4">Acciones</th>
@@ -47,15 +48,15 @@
           <tbody class="divide-y divide-slate-100">
             @for (usuario of usuarios(); track usuario.id) {
               <tr class="hover:bg-slate-50/50 transition-colors">
-                <!-- Login -->
                 <td class="px-6 py-4 font-mono font-semibold text-slate-800">{{ usuario.usuario }}</td>
-                
-                <!-- Nombre -->
                 <td class="px-6 py-4 font-bold text-slate-900">{{ nombreCompleto(usuario) }}</td>
-                
-                <!-- Rol -->
                 <td class="px-6 py-4">
-                  <span 
+                  <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border bg-slate-50 text-slate-600 border-slate-200">
+                    {{ usuario.empleado.cargo.nombre }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <span
                     class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
                     [class.bg-brand-50]="usuario.rol === 'ADMINISTRADOR'"
                     [class.text-brand-700]="usuario.rol === 'ADMINISTRADOR'"
@@ -67,10 +68,8 @@
                     {{ usuario.rol }}
                   </span>
                 </td>
-                
-                <!-- Estado -->
                 <td class="px-6 py-4">
-                  <span 
+                  <span
                     class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
                     [class.bg-emerald-50]="usuario.estado"
                     [class.text-emerald-700]="usuario.estado"
@@ -82,11 +81,9 @@
                     {{ usuario.estado ? 'Activo' : 'Baja / Inactivo' }}
                   </span>
                 </td>
-                
-                <!-- Acciones -->
                 <td class="px-6 py-4">
-                  <button 
-                    (click)="toggleEstado(usuario)" 
+                  <button
+                    (click)="toggleEstado(usuario)"
                     class="text-[10px] font-bold cursor-pointer border-0 outline-none bg-transparent"
                     [class.text-rose-650]="usuario.estado"
                     [class.hover:text-rose-750]="usuario.estado"
@@ -94,6 +91,12 @@
                     [class.hover:text-brand-750]="!usuario.estado"
                   >
                     {{ usuario.estado ? 'Dar de baja' : 'Reactivar usuario' }}
+                  </button>
+                  <button
+                    (click)="abrirCambiarPassword(usuario)"
+                    class="text-[10px] font-bold text-slate-500 hover:text-slate-800 ml-3 cursor-pointer bg-transparent border-0"
+                  >
+                    Cambiar Contraseña
                   </button>
                 </td>
               </tr>
@@ -108,137 +111,227 @@
   @if (mostrarFormulario()) {
     <div class="fixed inset-0 bg-navy-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-slate-200/80 overflow-hidden animate-fade-in">
-        
-        <!-- Cabecera Modal -->
+
         <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10">
           <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Nuevo Usuario del Sistema</h2>
-          <p class="text-xs text-slate-400 mt-1">Crea un registro de personal técnico o administrativo para el acceso al panel.</p>
+          <p class="text-xs text-slate-400 mt-1">Busca al empleado por su DNI para otorgarle acceso al panel.</p>
         </div>
 
-        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4 p-6">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-650 mb-1.5">DNI *</label>
-              <input 
-                formControlName="dni" 
-                placeholder="Ingresa DNI" 
-                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono" 
+        <div class="p-6 space-y-5">
+
+          <!-- Paso 1: Búsqueda por DNI -->
+          <form [formGroup]="formBusqueda" (ngSubmit)="buscarEmpleado()" class="space-y-2">
+            <label class="block text-xs font-semibold text-slate-650 mb-1.5">DNI del empleado *</label>
+            <div class="flex gap-2">
+              <input
+                formControlName="dni"
+                placeholder="Ingresa DNI"
+                [readOnly]="!!empleadoEncontrado()"
+                class="flex-1 rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono disabled:opacity-60"
               />
+              @if (!empleadoEncontrado()) {
+                <button
+                  type="submit"
+                  [disabled]="formBusqueda.invalid || buscandoEmpleado()"
+                  class="bg-slate-800 hover:bg-slate-900 disabled:bg-slate-200 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-all cursor-pointer border-0 outline-none disabled:cursor-not-allowed"
+                >
+                  @if (buscandoEmpleado()) {
+                    <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mx-auto block"></span>
+                  } @else {
+                    <span>Buscar</span>
+                  }
+                </button>
+              } @else {
+                <button
+                  type="button"
+                  (click)="cambiarDni()"
+                  class="border border-slate-250 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-4 py-2.5 rounded-xl cursor-pointer"
+                >
+                  Cambiar
+                </button>
+              }
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Rol *</label>
-              <select 
-                formControlName="rol" 
-                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer"
+
+            @if (errorBusquedaDni()) {
+              <div class="flex items-start space-x-2 text-red-750 text-xs bg-red-50 border border-red-100 rounded-xl p-3">
+                <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>{{ errorBusquedaDni() }}</span>
+              </div>
+            }
+          </form>
+
+          <!-- Paso 2: Datos autocompletados + credenciales (solo si se encontró al empleado) -->
+          @if (empleadoEncontrado()) {
+            <div class="bg-slate-50/50 border border-slate-200/80 rounded-xl p-4 space-y-3">
+              <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                Empleado encontrado
+              </h3>
+              <div class="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <p class="text-slate-400 font-medium mb-0.5">Nombre completo</p>
+                  <p class="font-semibold text-slate-800">{{ nombreCompleto2(empleadoEncontrado()!) }}</p>
+                </div>
+                <div>
+                  <p class="text-slate-400 font-medium mb-0.5">Cargo</p>
+                  <p class="font-semibold text-slate-800">{{ empleadoEncontrado()!.cargo.nombre }}</p>
+                </div>
+              </div>
+            </div>
+
+            <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-650 mb-1.5">Rol *</label>
+                <select
+                  formControlName="rol"
+                  class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer"
+                >
+                  <option value="TECNICO">Técnico</option>
+                  <option value="ADMINISTRADOR">Administrador</option>
+                </select>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-200/60">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-650 mb-1.5">Usuario (Login) *</label>
+                  <input
+                    formControlName="usuario"
+                    placeholder="Nombre de usuario"
+                    class="w-full rounded-xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-650 mb-1.5">Contraseña *</label>
+                  <input
+                    formControlName="password"
+                    type="password"
+                    placeholder="••••••••"
+                    class="w-full rounded-xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+                  />
+                </div>
+              </div>
+
+              @if (errorMensaje()) {
+                <div class="flex items-start space-x-2 text-red-750 text-xs bg-red-50 border border-red-100 rounded-xl p-3">
+                  <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>{{ errorMensaje() }}</span>
+                </div>
+              }
+
+              <div class="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  (click)="cerrarFormulario()"
+                  class="flex-1 border border-slate-250 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold py-2.5 rounded-xl cursor-pointer"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  [disabled]="form.invalid || guardando()"
+                  class="flex-1 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 text-white text-xs font-semibold py-2.5 rounded-xl shadow-md shadow-brand-500/10 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
+                >
+                  @if (guardando()) {
+                    <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mx-auto"></span>
+                  } @else {
+                    <span>Crear Cuenta</span>
+                  }
+                </button>
+              </div>
+            </form>
+          } @else {
+            <div class="flex justify-end pt-2">
+              <button
+                type="button"
+                (click)="cerrarFormulario()"
+                class="border border-slate-250 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-5 py-2.5 rounded-xl cursor-pointer"
               >
-                <option value="TECNICO">Técnico</option>
-                <option value="ADMINISTRADOR">Administrador</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold text-slate-650 mb-1.5">Nombre *</label>
-            <input 
-              formControlName="nombre" 
-              placeholder="Nombres completos" 
-              class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
-            />
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Apellido Paterno *</label>
-              <input 
-                formControlName="apellidoPaterno" 
-                placeholder="Primer apellido" 
-                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
-              />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Apellido Materno</label>
-              <input 
-                formControlName="apellidoMaterno" 
-                placeholder="Segundo apellido" 
-                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
-              />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Teléfono</label>
-              <input 
-                formControlName="telefono" 
-                placeholder="Contacto" 
-                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
-              />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Correo</label>
-              <input 
-                formControlName="correo" 
-                type="email" 
-                placeholder="Correo electrónico" 
-                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
-              />
-            </div>
-          </div>
-
-          <hr class="border-slate-100" />
-
-          <!-- Credenciales de Login -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-200/60">
-            <div>
-              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Usuario (Login) *</label>
-              <input 
-                formControlName="usuario" 
-                placeholder="Nombre de usuario" 
-                class="w-full rounded-xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono" 
-              />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Contraseña *</label>
-              <input 
-                formControlName="password" 
-                type="password" 
-                placeholder="••••••••" 
-                class="w-full rounded-xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
-              />
-            </div>
-          </div>
-
-          @if (errorMensaje()) {
-            <div class="flex items-start space-x-2 text-red-750 text-xs bg-red-50 border border-red-100 rounded-xl p-3">
-              <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span>{{ errorMensaje() }}</span>
+                Cancelar
+              </button>
             </div>
           }
+        </div>
+      </div>
+    </div>
+  }
 
-          <!-- Acciones del Modal -->
-          <div class="flex gap-3 pt-2">
-            <button
-              type="button"
-              (click)="cerrarFormulario()"
-              class="flex-1 border border-slate-250 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold py-2.5 rounded-xl cursor-pointer"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              [disabled]="form.invalid || guardando()"
-              class="flex-1 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 text-white text-xs font-semibold py-2.5 rounded-xl shadow-md shadow-brand-500/10 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
-            >
-              @if (guardando()) {
-                <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mx-auto"></span>
-              } @else {
-                <span>Crear Cuenta</span>
-              }
-            </button>
+  @if (mostrarModalPassword()) {
+    <div class="fixed inset-0 bg-navy-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md border border-slate-200/80 overflow-hidden animate-fade-in">
+
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10">
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Cambiar Contraseña</h2>
+          <p class="text-xs text-slate-400 mt-1">Actualiza las credenciales de acceso del personal.</p>
+        </div>
+
+        <div class="p-6 space-y-5">
+          <div class="bg-slate-50/50 border border-slate-200/80 rounded-xl p-4 space-y-3">
+            <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              Datos del Usuario
+            </h3>
+
+            <div class="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <p class="text-slate-400 font-medium mb-0.5">Nombre completo</p>
+                <p class="font-semibold text-slate-800">{{ nombreCompleto(usuarioSeleccionado()!) }}</p>
+              </div>
+              <div>
+                <p class="text-slate-400 font-medium mb-0.5">DNI</p>
+                <p class="font-semibold text-slate-800">{{ usuarioSeleccionado()?.empleado?.persona?.dni }}</p>
+              </div>
+              <div>
+                <p class="text-slate-400 font-medium mb-0.5">Usuario (Login)</p>
+                <p class="font-mono font-semibold text-brand-650">{{ usuarioSeleccionado()?.usuario }}</p>
+              </div>
+              <div>
+                <p class="text-slate-400 font-medium mb-0.5">Rol asignado</p>
+                <p class="font-semibold text-slate-800">{{ usuarioSeleccionado()?.rol }}</p>
+              </div>
+            </div>
           </div>
-        </form>
+
+          <form [formGroup]="formPassword" (ngSubmit)="guardarPassword()" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Nueva contraseña *</label>
+              <input
+                formControlName="password"
+                type="password"
+                placeholder="••••••••"
+                class="w-full rounded-xl border border-slate-200/80 bg-white px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+              />
+            </div>
+
+            <div class="flex gap-3 pt-2">
+              <button
+                type="button"
+                (click)="mostrarModalPassword.set(false)"
+                class="flex-1 border border-slate-250 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold py-2.5 rounded-xl cursor-pointer transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                [disabled]="formPassword.invalid || guardando()"
+                class="flex-1 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 text-white text-xs font-semibold py-2.5 rounded-xl shadow-md shadow-brand-500/10 cursor-pointer disabled:cursor-not-allowed border-0 outline-none transition-all"
+              >
+                @if (guardando()) {
+                  <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mx-auto block"></span>
+                } @else {
+                  <span>Confirmar Cambio</span>
+                }
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   }

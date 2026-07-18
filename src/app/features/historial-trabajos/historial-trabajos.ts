@@ -58,6 +58,6 @@ export class HistorialTrabajos implements OnInit {
   }
 
   nombreTecnico(orden: OrdenTrabajo): string {
-    return orden.tecnicoAsignado.persona.nombre + ' ' + orden.tecnicoAsignado.persona.apellidoPaterno;
+    return orden.tecnicoAsignado.empleado.persona.nombre + ' ' + orden.tecnicoAsignado.empleado.persona.apellidoPaterno;
   }
 }

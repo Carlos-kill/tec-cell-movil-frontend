@@ -62,9 +62,14 @@ export class OrdenCrear implements OnInit {
 
   ngOnInit(): void {
     this.catalogoService.listarTiposEquipo().subscribe(tipos => this.tiposEquipo.set(tipos));
+    if (this.esAdmin) {
     this.usuarioService.listar().subscribe(usuarios =>
-      this.tecnicos.set(usuarios.filter(u => u.estado))
-    );
+        this.tecnicos.set(usuarios.filter(u => u.estado))
+      );
+    } else {
+      const miId = this.authService.getUsuarioId();
+      this.form.patchValue({ tecnicoAsignadoId: miId });
+    }
     this.catalogoService.listarEstadosOrden().subscribe(estados => {
       const ordenados = [...estados].sort((a, b) => a.ordenVisual - b.ordenVisual);
       this.estadoInicial.set(ordenados[0] ?? null);
@@ -117,7 +122,15 @@ export class OrdenCrear implements OnInit {
   get nombreTecnicoSeleccionado(): string {
     const id = this.form.value.tecnicoAsignadoId;
     const tec = this.tecnicos().find(t => t.id === id);
-    return tec ? `${tec.persona.nombre} ${tec.persona.apellidoPaterno}` : '';
+    return tec ? `${tec.empleado.persona.nombre} ${tec.empleado.persona.apellidoPaterno}` : '';
+  }
+
+  get esAdmin(): boolean {
+    return this.authService.esAdministrador();
+  }
+
+  get nombreUsuarioActual(): string {
+    return this.authService.usuarioActual()?.nombreCompleto ?? '';
   }
 
   onSubmit(): void {

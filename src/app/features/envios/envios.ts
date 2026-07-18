@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EnvioService } from '../../core/services/envio.service';
 import { OrdenService } from '../../core/services/orden.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -20,6 +20,8 @@ export class Envios implements OnInit {
   private envioService = inject(EnvioService);
   private ordenService = inject(OrdenService);
   private authService = inject(AuthService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   envios = signal<EnvioExterno[]>([]);
   cargando = signal(true);
@@ -33,6 +35,10 @@ export class Envios implements OnInit {
   errorBusquedaOrden = signal('');
   guardando = signal(false);
   errorMensaje = signal('');
+  mostrarModalRetorno = signal(false);
+  envioParaRetorno = signal<EnvioExterno | null>(null);
+  costoRealInput = '';
+  guardandoRetorno = signal(false);
 
   form = this.fb.group({
     tecnicoExternoNombre: ['', Validators.required],
@@ -44,6 +50,13 @@ export class Envios implements OnInit {
 
   ngOnInit(): void {
     this.cargarEnvios();
+
+    this.route.queryParamMap.subscribe(params => {
+      const ordenId = params.get('ordenId');
+      if (ordenId) {
+        this.abrirPanelConOrden(Number(ordenId));
+      }
+    });
   }
 
   cargarEnvios(): void {
@@ -58,11 +71,18 @@ export class Envios implements OnInit {
   }
 
   get enviosFiltrados(): EnvioExterno[] {
-    if (!this.textoBusqueda) return this.envios();
-    const texto = this.textoBusqueda.toLowerCase();
-    return this.envios().filter(e =>
-      e.tecnicoExternoNombre.toLowerCase().includes(texto) ||
-      e.orden?.codigoUnico.toLowerCase().includes(texto)
+    let lista = this.envios();
+
+    if (this.textoBusqueda) {
+      const texto = this.textoBusqueda.toLowerCase();
+      lista = lista.filter(e =>
+        e.tecnicoExternoNombre.toLowerCase().includes(texto) ||
+        e.orden?.codigoUnico.toLowerCase().includes(texto)
+      );
+    }
+
+    return [...lista].sort((a, b) =>
+      new Date(b.fechaEnvio).getTime() - new Date(a.fechaEnvio).getTime()
     );
   }
 
@@ -78,6 +98,33 @@ export class Envios implements OnInit {
     this.errorBusquedaOrden.set('');
     this.errorMensaje.set('');
     this.form.reset();
+
+    this.ordenService.listar({ size: 10 }).subscribe(respuesta => {
+      this.ordenesRecientes.set(respuesta.content.filter(o => !o.estadoActual.esEstadoFinal));
+    });
+  }
+
+  abrirPanelConOrden(ordenId: number): void {
+    this.mostrarPanel.set(true);
+    this.codigoOrden = '';
+    this.ordenEncontrada.set(null);
+    this.errorBusquedaOrden.set('');
+    this.errorMensaje.set('');
+    this.form.reset();
+    this.buscandoOrden.set(true);
+
+    this.ordenService.obtener(ordenId).subscribe({
+      next: (orden) => {
+        this.ordenEncontrada.set(orden);
+        this.codigoOrden = orden.codigoUnico;
+        this.buscandoOrden.set(false);
+        this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+      },
+      error: () => {
+        this.errorBusquedaOrden.set('No se pudo cargar la orden seleccionada.');
+        this.buscandoOrden.set(false);
+      },
+    });
 
     this.ordenService.listar({ size: 10 }).subscribe(respuesta => {
       this.ordenesRecientes.set(respuesta.content.filter(o => !o.estadoActual.esEstadoFinal));
@@ -151,13 +198,32 @@ export class Envios implements OnInit {
     });
   }
 
-  registrarRetorno(envio: EnvioExterno): void {
+  abrirModalRetorno(envio: EnvioExterno): void {
+    this.envioParaRetorno.set(envio);
+    this.costoRealInput = '';
+    this.mostrarModalRetorno.set(true);
+  }
+
+  cerrarModalRetorno(): void {
+    this.mostrarModalRetorno.set(false);
+    this.envioParaRetorno.set(null);
+  }
+
+  confirmarRetorno(): void {
+    const envio = this.envioParaRetorno();
     const usuarioId = this.authService.getUsuarioId();
-    if (!usuarioId) return;
-    const costoReal = prompt('Costo real del envío (S/):');
-    if (costoReal === null) return;
-    this.envioService.registrarRetorno(envio.id, Number(costoReal), usuarioId).subscribe(() => {
-      this.cargarEnvios();
+    if (!envio || !usuarioId || !this.costoRealInput) return;
+
+    this.guardandoRetorno.set(true);
+    this.envioService.registrarRetorno(envio.id, Number(this.costoRealInput), usuarioId).subscribe({
+      next: () => {
+        this.guardandoRetorno.set(false);
+        this.mostrarModalRetorno.set(false);
+        this.cargarEnvios();
+      },
+      error: () => {
+        this.guardandoRetorno.set(false);
+      },
     });
   }
 }

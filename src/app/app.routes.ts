@@ -45,6 +45,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/clientes/clientes').then(m => m.Clientes)
       },
       {
+        path: 'empleados',
+        canActivate: [adminGuard], // Protegido solo para administradores
+        loadComponent: () => import('./features/empleados/empleados').then(m => m.Empleados)
+      },
+      {
         path: 'usuarios',
         canActivate: [adminGuard],
         loadComponent: () => import('./features/usuarios/usuarios').then(m => m.Usuarios)

@@ -1,0 +1,219 @@
+<div class="space-y-6">
+  <!-- Cabecera de Página -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Empleados</h1>
+      <p class="text-xs text-slate-500 mt-1">Registra al personal del taller antes de poder crearles una cuenta de acceso al sistema.</p>
+    </div>
+
+    <button
+      (click)="abrirFormulario()"
+      class="inline-flex items-center justify-center bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-4.5 py-2.5 rounded-xl shadow-md shadow-brand-500/10 hover:shadow-lg transition-all space-x-2 cursor-pointer border-0 outline-none"
+    >
+      <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      <span>Nuevo Empleado</span>
+    </button>
+  </div>
+
+  <!-- Tabla de Empleados -->
+  <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+    @if (cargando()) {
+      <div class="flex flex-col items-center justify-center py-20 space-y-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-500 border-t-transparent"></div>
+        <p class="text-xs text-slate-400 font-medium">Buscando empleados registrados...</p>
+      </div>
+    } @else if (empleados().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 text-slate-500 text-sm space-y-2">
+        <svg class="w-10 h-10 text-slate-350" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <p class="font-medium text-slate-650">No hay empleados registrados.</p>
+        <p class="text-xs text-slate-400">Registra un empleado para poder crearle su cuenta de acceso luego.</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+            <tr>
+              <th class="px-6 py-4">DNI</th>
+              <th class="px-6 py-4">Nombre Completo</th>
+              <th class="px-6 py-4">Cargo</th>
+              <th class="px-6 py-4">Teléfono</th>
+              <th class="px-6 py-4">Estado</th>
+              <th class="px-6 py-4">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (empleado of empleados(); track empleado.id) {
+              <tr class="hover:bg-slate-50/50 transition-colors">
+                <td class="px-6 py-4 font-mono font-semibold text-slate-800">{{ empleado.persona.dni }}</td>
+                <td class="px-6 py-4 font-bold text-slate-900">{{ nombreCompleto(empleado) }}</td>
+                <td class="px-6 py-4">
+                  <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border bg-slate-50 text-slate-600 border-slate-200">
+                    {{ empleado.cargo.nombre }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-slate-600 font-medium">{{ empleado.persona.telefono || '—' }}</td>
+                <td class="px-6 py-4">
+                  <span
+                    class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
+                    [class.bg-emerald-50]="empleado.estado"
+                    [class.text-emerald-700]="empleado.estado"
+                    [class.border-emerald-100]="empleado.estado"
+                    [class.bg-rose-50]="!empleado.estado"
+                    [class.text-rose-700]="!empleado.estado"
+                    [class.border-rose-100]="!empleado.estado"
+                  >
+                    {{ empleado.estado ? 'Activo' : 'Baja / Inactivo' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <button (click)="abrirEditar(empleado)" class="text-[10px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer border-0 outline-none bg-transparent mr-3">
+                    Editar
+                  </button>
+                  <button
+                    (click)="toggleEstado(empleado)"
+                    class="text-[10px] font-bold cursor-pointer border-0 outline-none bg-transparent"
+                    [class.text-rose-650]="empleado.estado"
+                    [class.text-brand-650]="!empleado.estado"
+                  >
+                    {{ empleado.estado ? 'Dar de baja' : 'Reactivar' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Formulario modal de nuevo empleado -->
+  @if (mostrarFormulario()) {
+    <div class="fixed inset-0 bg-navy-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg border border-slate-200/80 overflow-hidden animate-fade-in">
+
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10">
+          <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            {{ editandoId() ? 'Editar Empleado' : 'Nuevo Empleado' }}
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Registra los datos personales y el cargo del nuevo integrante del taller.</p>
+        </div>
+
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4 p-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">DNI *</label>
+              <input
+                formControlName="dni"
+                placeholder="Ingresa DNI"
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Cargo *</label>
+              <select
+                formControlName="cargoId"
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-700 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all cursor-pointer"
+              >
+                <option [value]="null" disabled>Selecciona un cargo</option>
+                @for (c of cargos(); track c.id) {
+                  <option [value]="c.id">{{ c.nombre }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-650 mb-1.5">Nombre *</label>
+            <input
+              formControlName="nombre"
+              placeholder="Nombres completos"
+              class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Apellido Paterno *</label>
+              <input
+                formControlName="apellidoPaterno"
+                placeholder="Primer apellido"
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Apellido Materno</label>
+              <input
+                formControlName="apellidoMaterno"
+                placeholder="Segundo apellido"
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+              />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Teléfono</label>
+              <input
+                formControlName="telefono"
+                placeholder="Contacto"
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-650 mb-1.5">Correo</label>
+              <input
+                formControlName="correo"
+                type="email"
+                placeholder="Correo electrónico"
+                class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-650 mb-1.5">Dirección</label>
+            <input
+              formControlName="direccion"
+              placeholder="Dirección de domicilio"
+              class="w-full rounded-xl border border-slate-200/80 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all"
+            />
+          </div>
+
+          @if (errorMensaje()) {
+            <div class="flex items-start space-x-2 text-red-750 text-xs bg-red-50 border border-red-100 rounded-xl p-3">
+              <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{{ errorMensaje() }}</span>
+            </div>
+          }
+
+          <div class="flex gap-3 pt-2">
+            <button
+              type="button"
+              (click)="cerrarFormulario()"
+              class="flex-1 border border-slate-250 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold py-2.5 rounded-xl cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              [disabled]="form.invalid || guardando()"
+              class="flex-1 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 text-white text-xs font-semibold py-2.5 rounded-xl shadow-md shadow-brand-500/10 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
+            >
+              @if (guardando()) {
+                <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mx-auto"></span>
+              } @else {
+                <span>Guardar Empleado</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

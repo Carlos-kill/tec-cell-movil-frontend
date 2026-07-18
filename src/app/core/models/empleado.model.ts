@@ -1,13 +1,20 @@
 import { Persona } from './persona.model';
 
-export interface Cliente {
+export interface Cargo {
   id: number;
-  persona: Persona;
-  estado: boolean;
-  feccre: string;
+  nombre: string;
+  activo: boolean;
 }
 
-export interface CrearClienteRequest {
+export interface Empleado {
+  id: number;
+  persona: Persona;
+  cargo: Cargo;
+  fechaIngreso: string;
+  estado: boolean;
+}
+
+export interface CrearEmpleadoRequest {
   dni: string;
   nombre: string;
   apellidoPaterno: string;
@@ -15,4 +22,5 @@ export interface CrearClienteRequest {
   telefono?: string;
   correo?: string;
   direccion?: string;
+  cargoId: number;
 }

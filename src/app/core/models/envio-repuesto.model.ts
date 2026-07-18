@@ -8,7 +8,7 @@ export interface EnvioExterno {
   fechaRetornoEsperada?: string;
   fechaRetornoReal?: string;
   observaciones?: string;
-  orden?: { id: number; codigoUnico: string };
+  orden?: { id: number; codigoUnico: string; estadoActual?: { nombre: string } };
 }
 
 export interface CrearEnvioRequest {

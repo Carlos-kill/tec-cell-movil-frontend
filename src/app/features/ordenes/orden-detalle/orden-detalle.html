@@ -1,373 +1,163 @@
-<div class="space-y-6">
+<div>
   @if (cargando()) {
-    <div class="flex flex-col items-center justify-center py-20 space-y-4">
-      <div class="animate-spin rounded-full h-8 w-8 border-2 border-brand-500 border-t-transparent"></div>
-      <p class="text-xs text-slate-400 font-medium">Cargando detalles de la orden...</p>
-    </div>
+    <p class="text-slate-500">Cargando...</p>
   } @else if (orden()) {
 
-    <!-- Cabecera y Volver -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200">
-      <div class="flex items-center space-x-3.5">
-        <a routerLink="/ordenes" class="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
-          </svg>
-        </a>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-2xl font-mono font-bold text-slate-900 tracking-tight">{{ orden()!.codigoUnico }}</h1>
-            <span 
-              class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
-              [class.bg-blue-50]="orden()!.estadoActual.nombre === 'Ingresado'"
-              [class.text-blue-700]="orden()!.estadoActual.nombre === 'Ingresado'"
-              [class.border-blue-100]="orden()!.estadoActual.nombre === 'Ingresado'"
-              
-              [class.bg-amber-50]="orden()!.estadoActual.nombre === 'En espera de repuestos' || orden()!.estadoActual.nombre === 'Enviado a tercero'"
-              [class.text-amber-700]="orden()!.estadoActual.nombre === 'En espera de repuestos' || orden()!.estadoActual.nombre === 'Enviado a tercero'"
-              [class.border-amber-100]="orden()!.estadoActual.nombre === 'En espera de repuestos' || orden()!.estadoActual.nombre === 'Enviado a tercero'"
-              
-              [class.bg-indigo-50]="orden()!.estadoActual.nombre === 'En reparación' || orden()!.estadoActual.nombre === 'En diagnóstico'"
-              [class.text-indigo-700]="orden()!.estadoActual.nombre === 'En reparación' || orden()!.estadoActual.nombre === 'En diagnóstico'"
-              [class.border-indigo-100]="orden()!.estadoActual.nombre === 'En reparación' || orden()!.estadoActual.nombre === 'En diagnóstico'"
-              
-              [class.bg-emerald-50]="orden()!.estadoActual.nombre === 'Reparación finalizada' || orden()!.estadoActual.nombre === 'Entregado al cliente'"
-              [class.text-emerald-700]="orden()!.estadoActual.nombre === 'Reparación finalizada' || orden()!.estadoActual.nombre === 'Entregado al cliente'"
-              [class.border-emerald-100]="orden()!.estadoActual.nombre === 'Reparación finalizada' || orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            >
-              {{ orden()!.estadoActual.nombre }}
-            </span>
-          </div>
-          <p class="text-xs text-slate-500 mt-1">Ingresado por el personal de recepción · Código de seguimiento público.</p>
-        </div>
-      </div>
-      
-      <!-- Costo Total si ya fue entregada -->
-      @if (orden()!.fechaEntregaReal) {
-        <div class="bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2.5 flex items-center space-x-3">
-          <span class="text-emerald-600">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </span>
-          <div>
-            <p class="text-[10px] text-emerald-600 font-semibold uppercase tracking-wider">Costo Cerrado</p>
-            <p class="text-base font-bold text-slate-800">S/ {{ orden()!.costoTotal }}</p>
-          </div>
-        </div>
-      }
+    <div class="flex items-center gap-3 mb-6">
+      <a routerLink="/ordenes" class="text-slate-400 hover:text-slate-600">← Volver</a>
+      <h1 class="text-2xl font-bold text-slate-800">{{ orden()!.codigoUnico }}</h1>
+      <span class="bg-blue-50 text-blue-700 text-xs font-medium px-2 py-1 rounded-full">
+        {{ orden()!.estadoActual.nombre }}
+      </span>
     </div>
 
-    <!-- Timeline del Estado del Proceso (Estética Premium) -->
-    <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm">
-      <div class="relative flex items-center justify-between">
-        
-        <!-- Línea de Fondo -->
-        <div class="absolute left-0 right-0 top-1/2 h-0.5 bg-slate-100 -translate-y-1/2 z-0"></div>
-        
-        <!-- Barra de Progreso Activa (Línea de color) -->
-        <div 
-          class="absolute left-0 top-1/2 h-0.5 bg-brand-500 -translate-y-1/2 z-0 transition-all duration-500"
-          [style.width]="
-            orden()!.estadoActual.nombre === 'Ingresado' ? '0%' :
-            orden()!.estadoActual.nombre === 'En diagnóstico' ? '25%' :
-            (orden()!.estadoActual.nombre === 'En reparación' || 
-             orden()!.estadoActual.nombre === 'En espera de repuestos' || 
-             orden()!.estadoActual.nombre === 'Enviado a tercero') ? '50%' :
-            orden()!.estadoActual.nombre === 'Reparación finalizada' ? '75%' : '100%'
-          "
-        ></div>
-
-        <!-- Pasos -->
-        <!-- Paso 1: Ingreso -->
-        <div class="relative z-10 flex flex-col items-center">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-xs font-bold transition-all bg-brand-500 border-brand-500 text-white shadow-md shadow-brand-500/20">
-            1
-          </div>
-          <span class="text-[10px] font-bold text-slate-800 mt-2">Ingresado</span>
-        </div>
-
-        <!-- Paso 2: Diagnóstico -->
-        <div class="relative z-10 flex flex-col items-center">
-          <div 
-            class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-xs font-bold transition-all"
-            [class.bg-brand-500]="orden()!.estadoActual.nombre !== 'Ingresado'"
-            [class.border-brand-500]="orden()!.estadoActual.nombre !== 'Ingresado'"
-            [class.text-white]="orden()!.estadoActual.nombre !== 'Ingresado'"
-            [class.shadow-md]="orden()!.estadoActual.nombre !== 'Ingresado'"
-            [class.shadow-brand-500/10]="orden()!.estadoActual.nombre !== 'Ingresado'"
-            [class.bg-white]="orden()!.estadoActual.nombre === 'Ingresado'"
-            [class.border-slate-200]="orden()!.estadoActual.nombre === 'Ingresado'"
-            [class.text-slate-400]="orden()!.estadoActual.nombre === 'Ingresado'"
-          >
-            2
-          </div>
-          <span class="text-[10px] font-bold mt-2" [class.text-slate-800]="orden()!.estadoActual.nombre !== 'Ingresado'" [class.text-slate-400]="orden()!.estadoActual.nombre === 'Ingresado'">Diagnóstico</span>
-        </div>
-
-        <!-- Paso 3: Reparación -->
-        <div class="relative z-10 flex flex-col items-center">
-          <div 
-            class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-xs font-bold transition-all"
-            [class.bg-brand-500]="orden()!.estadoActual.nombre !== 'Ingresado' && orden()!.estadoActual.nombre !== 'En diagnóstico'"
-            [class.border-brand-500]="orden()!.estadoActual.nombre !== 'Ingresado' && orden()!.estadoActual.nombre !== 'En diagnóstico'"
-            [class.text-white]="orden()!.estadoActual.nombre !== 'Ingresado' && orden()!.estadoActual.nombre !== 'En diagnóstico'"
-            [class.shadow-md]="orden()!.estadoActual.nombre !== 'Ingresado' && orden()!.estadoActual.nombre !== 'En diagnóstico'"
-            [class.shadow-brand-500/10]="orden()!.estadoActual.nombre !== 'Ingresado' && orden()!.estadoActual.nombre !== 'En diagnóstico'"
-            [class.bg-white]="orden()!.estadoActual.nombre === 'Ingresado' || orden()!.estadoActual.nombre === 'En diagnóstico'"
-            [class.border-slate-200]="orden()!.estadoActual.nombre === 'Ingresado' || orden()!.estadoActual.nombre === 'En diagnóstico'"
-            [class.text-slate-400]="orden()!.estadoActual.nombre === 'Ingresado' || orden()!.estadoActual.nombre === 'En diagnóstico'"
-          >
-            3
-          </div>
-          <span class="text-[10px] font-bold mt-2" [class.text-slate-800]="orden()!.estadoActual.nombre !== 'Ingresado' && orden()!.estadoActual.nombre !== 'En diagnóstico'" [class.text-slate-400]="orden()!.estadoActual.nombre === 'Ingresado' || orden()!.estadoActual.nombre === 'En diagnóstico'">Reparación</span>
-        </div>
-
-        <!-- Paso 4: Finalizado -->
-        <div class="relative z-10 flex flex-col items-center">
-          <div 
-            class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-xs font-bold transition-all"
-            [class.bg-brand-500]="orden()!.estadoActual.nombre === 'Reparación finalizada' || orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.border-brand-500]="orden()!.estadoActual.nombre === 'Reparación finalizada' || orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.text-white]="orden()!.estadoActual.nombre === 'Reparación finalizada' || orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.shadow-md]="orden()!.estadoActual.nombre === 'Reparación finalizada' || orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.shadow-brand-500/10]="orden()!.estadoActual.nombre === 'Reparación finalizada' || orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.bg-white]="orden()!.estadoActual.nombre !== 'Reparación finalizada' && orden()!.estadoActual.nombre !== 'Entregado al cliente'"
-            [class.border-slate-200]="orden()!.estadoActual.nombre !== 'Reparación finalizada' && orden()!.estadoActual.nombre !== 'Entregado al cliente'"
-            [class.text-slate-400]="orden()!.estadoActual.nombre !== 'Reparación finalizada' && orden()!.estadoActual.nombre !== 'Entregado al cliente'"
-          >
-            4
-          </div>
-          <span class="text-[10px] font-bold mt-2" [class.text-slate-800]="orden()!.estadoActual.nombre === 'Reparación finalizada' || orden()!.estadoActual.nombre === 'Entregado al cliente'" [class.text-slate-400]="orden()!.estadoActual.nombre !== 'Reparación finalizada' && orden()!.estadoActual.nombre !== 'Entregado al cliente'">Completado</span>
-        </div>
-
-        <!-- Paso 5: Entregado -->
-        <div class="relative z-10 flex flex-col items-center">
-          <div 
-            class="w-8 h-8 rounded-full flex items-center justify-center border-2 text-xs font-bold transition-all"
-            [class.bg-brand-500]="orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.border-brand-500]="orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.text-white]="orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.shadow-md]="orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.shadow-brand-500/10]="orden()!.estadoActual.nombre === 'Entregado al cliente'"
-            [class.bg-white]="orden()!.estadoActual.nombre !== 'Entregado al cliente'"
-            [class.border-slate-200]="orden()!.estadoActual.nombre !== 'Entregado al cliente'"
-            [class.text-slate-400]="orden()!.estadoActual.nombre !== 'Entregado al cliente'"
-          >
-            5
-          </div>
-          <span class="text-[10px] font-bold mt-2" [class.text-slate-800]="orden()!.estadoActual.nombre === 'Entregado al cliente'" [class.text-slate-400]="orden()!.estadoActual.nombre !== 'Entregado al cliente'">Entregado</span>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Grid de Detalles -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      <!-- Columna Izquierda: Información de la Orden -->
-      <div class="lg:col-span-2 space-y-6">
-        
-        <!-- Ficha de Datos Generales -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center space-x-2.5">
-            <span class="text-brand-500">
-              <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </span>
-            <h2 class="font-bold text-slate-900 text-sm">Ficha de Servicio</h2>
-          </div>
 
-          <div class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6 text-xs border-b border-slate-100">
+      <!-- Columna izquierda -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- Datos generales -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h2 class="font-semibold text-slate-800 mb-4">Información general</h2>
+          <div class="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <p class="text-slate-450 font-medium">Cliente</p>
-              <p class="font-bold text-slate-800 mt-1">{{ nombreCliente() }}</p>
+              <p class="text-slate-500">Cliente</p>
+              <p class="font-medium text-slate-800">{{ nombreCliente() }}</p>
             </div>
             <div>
-              <p class="text-slate-450 font-medium">DNI / Documento</p>
-              <p class="font-mono font-semibold text-slate-800 mt-1">{{ orden()!.equipo.cliente.persona.dni }}</p>
+              <p class="text-slate-500">DNI</p>
+              <p class="font-medium text-slate-800">{{ orden()!.equipo.cliente.persona.dni }}</p>
             </div>
             <div>
-              <p class="text-slate-450 font-medium">Técnico Asignado</p>
-              <p class="font-semibold text-slate-800 mt-1">{{ orden()!.tecnicoAsignado.persona.nombre }} {{ orden()!.tecnicoAsignado.persona.apellidoPaterno }}</p>
+              <p class="text-slate-500">Técnico asignado</p>
+              <p class="font-medium text-slate-800">{{ orden()!.tecnicoAsignado.empleado.persona.nombre }} {{ orden()!.tecnicoAsignado.empleado.persona.apellidoPaterno }}</p>
             </div>
             <div>
-              <p class="text-slate-450 font-medium">Fecha de Ingreso</p>
-              <p class="font-semibold text-slate-800 mt-1">{{ orden()!.fechaIngreso | slice:0:16 }}</p>
+              <p class="text-slate-500">Fecha de ingreso</p>
+              <p class="font-medium text-slate-800">{{ orden()!.fechaIngreso | slice:0:16 }}</p>
             </div>
             <div>
-              <p class="text-slate-450 font-medium">Especificación del Dispositivo</p>
-              <p class="font-semibold text-slate-800 mt-1">{{ orden()!.equipo.tipoEquipo.nombre }} — {{ orden()!.equipo.marca }} {{ orden()!.equipo.modelo }}</p>
+              <p class="text-slate-500">Equipo</p>
+              <p class="font-medium text-slate-800">{{ orden()!.equipo.tipoEquipo.nombre }} — {{ orden()!.equipo.marca }} {{ orden()!.equipo.modelo }}</p>
             </div>
             <div>
-              <p class="text-slate-450 font-medium">N° de Serie / IMEI</p>
-              <p class="font-mono font-semibold text-slate-800 mt-1">{{ orden()!.equipo.numeroSerieImei || '—' }}</p>
+              <p class="text-slate-500">N° serie / IMEI</p>
+              <p class="font-medium text-slate-800">{{ orden()!.equipo.numeroSerieImei || '—' }}</p>
+            </div>
+            <div class="col-span-2">
+              <p class="text-slate-500">Falla reportada</p>
+              <p class="font-medium text-slate-800">{{ orden()!.equipo.fallaReportada }}</p>
             </div>
             @if (orden()!.equipo.estadoFisicoIngreso) {
-              <div class="col-span-1 sm:col-span-2">
-                <p class="text-slate-450 font-medium">Estado Físico al Ingreso</p>
-                <p class="font-semibold text-slate-800 mt-1">{{ orden()!.equipo.estadoFisicoIngreso }}</p>
+              <div class="col-span-2">
+                <p class="text-slate-500">Estado físico al ingreso</p>
+                <p class="font-medium text-slate-800">{{ orden()!.equipo.estadoFisicoIngreso }}</p>
               </div>
             }
             @if (orden()!.fechaEntregaReal) {
-              <div class="col-span-1 sm:col-span-2 bg-emerald-50/50 border border-emerald-100 rounded-xl p-3">
-                <p class="text-emerald-700 font-bold">Entrega Efectuada</p>
-                <p class="text-slate-650 mt-1">El dispositivo fue devuelto formalmente al cliente el <span class="font-semibold">{{ orden()!.fechaEntregaReal | slice:0:16 }}</span>.</p>
-              </div>
-            }
-          </div>
-
-          <div class="p-6 text-xs bg-slate-50/30">
-            <p class="text-slate-450 font-medium mb-1.5">Falla Reportada por el Cliente</p>
-            <p class="text-slate-700 leading-relaxed font-medium bg-white border border-slate-200/80 rounded-xl p-3.5">{{ orden()!.equipo.fallaReportada }}</p>
-          </div>
-        </div>
-
-        <!-- Ficha de Envíos Externos -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <div class="flex items-center space-x-2.5">
-              <span class="text-brand-500">
-                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                </svg>
-              </span>
-              <h2 class="font-bold text-slate-900 text-sm">Taller de Terceros (Envíos)</h2>
-            </div>
-            <a routerLink="/envios" class="text-[10px] font-bold text-brand-600 hover:text-brand-700">Ir a Envíos →</a>
-          </div>
-
-          <div class="p-6">
-            @if (envios().length === 0) {
-              <p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">Este dispositivo no ha requerido reparaciones especializadas de terceros.</p>
-            } @else {
-              <div class="space-y-3">
-                @for (envio of envios(); track envio.id) {
-                  <div class="border border-slate-200/80 rounded-xl p-4 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-50/10">
-                    <div>
-                      <p class="font-bold text-slate-800 text-sm">{{ envio.tecnicoExternoNombre }}</p>
-                      <p class="text-slate-500 mt-1 flex items-center gap-1.5">
-                        <span>Enviado: {{ envio.fechaEnvio | slice:0:16 }}</span>
-                        <span class="text-slate-300">·</span>
-                        <span>Costo estimado: S/ {{ envio.costoEstimado ?? '—' }}</span>
-                      </p>
-                      @if (envio.fechaRetornoReal) {
-                        <p class="text-emerald-600 font-semibold mt-1 flex items-center gap-1">
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
-                          <span>Retornado el {{ envio.fechaRetornoReal | slice:0:16 }} (Costo Final: S/ {{ envio.costoReal }})</span>
-                        </p>
-                      }
-                    </div>
-                    <span 
-                      class="self-start sm:self-auto px-2 py-0.5 rounded-full text-[10px] font-bold border"
-                      [class.bg-emerald-50]="envio.fechaRetornoReal"
-                      [class.text-emerald-700]="envio.fechaRetornoReal"
-                      [class.border-emerald-100]="envio.fechaRetornoReal"
-                      [class.bg-blue-50]="!envio.fechaRetornoReal"
-                      [class.text-blue-700]="!envio.fechaRetornoReal"
-                      [class.border-blue-100]="!envio.fechaRetornoReal"
-                    >
-                      {{ envio.fechaRetornoReal ? 'Retornado' : 'En laboratorio externo' }}
-                    </span>
-                  </div>
-                }
+              <div class="col-span-2">
+                <p class="text-slate-500">Fecha de entrega</p>
+                <p class="font-medium text-green-700">{{ orden()!.fechaEntregaReal | slice:0:16 }}</p>
               </div>
             }
           </div>
         </div>
 
-        <!-- Ficha de Repuestos Solicitados -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-            <div class="flex items-center space-x-2.5">
-              <span class="text-brand-500">
-                <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </span>
-              <h2 class="font-bold text-slate-900 text-sm">Pedidos de Repuesto</h2>
-            </div>
-            <a routerLink="/pedidos" class="text-[10px] font-bold text-brand-600 hover:text-brand-700">Ir a Pedidos →</a>
+        <!-- Envíos externos (solo lectura) -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-slate-800">Envíos externos</h2>
+            <a routerLink="/envios" class="text-xs text-blue-600 hover:underline">Ir al módulo de Envíos →</a>
           </div>
 
-          <div class="p-6">
-            @if (repuestos().length === 0) {
-              <p class="text-xs text-slate-400 italic text-center py-4 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">No se han solicitado componentes o repuestos para este servicio.</p>
-            } @else {
-              <div class="space-y-3">
-                @for (rep of repuestos(); track rep.id) {
-                  <div class="border border-slate-200/80 rounded-xl p-4 text-xs flex items-center justify-between bg-slate-50/10">
-                    <div>
-                      <p class="font-bold text-slate-800 text-sm">{{ rep.nombreRepuesto }}</p>
-                      <p class="text-slate-500 mt-1">Pedido el {{ rep.fechaSolicitud | slice:0:16 }} · Precio: S/ {{ rep.precio ?? '—' }}</p>
-                    </div>
-                    <span
-                      class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
-                      [class.bg-emerald-50]="rep.instalado"
-                      [class.text-emerald-700]="rep.instalado"
-                      [class.border-emerald-100]="rep.instalado"
-                      [class.bg-amber-50]="!rep.instalado"
-                      [class.text-amber-700]="!rep.instalado"
-                      [class.border-amber-100]="!rep.instalado"
-                    >
-                      {{ rep.instalado ? 'Instalado en equipo' : 'Por instalar / pendiente' }}
-                    </span>
-                  </div>
-                }
-              </div>
-            }
+          @if (envios().length === 0) {
+            <p class="text-sm text-slate-500">Sin envíos registrados.</p>
+          } @else {
+            <div class="space-y-2">
+              @for (envio of envios(); track envio.id) {
+                <div class="border border-slate-200 rounded-lg p-3 text-sm">
+                  <p class="font-medium text-slate-800">{{ envio.tecnicoExternoNombre }}</p>
+                  <p class="text-slate-500">Enviado: {{ envio.fechaEnvio | slice:0:16 }} · Costo est.: S/ {{ envio.costoEstimado ?? '—' }}</p>
+                  @if (envio.fechaRetornoReal) {
+                    <p class="text-green-600">Retornado: {{ envio.fechaRetornoReal | slice:0:16 }} · Costo real: S/ {{ envio.costoReal }}</p>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Pedidos de repuesto (solo lectura) -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="font-semibold text-slate-800">Pedidos de repuesto</h2>
+            <a routerLink="/pedidos" class="text-xs text-blue-600 hover:underline">Ir al módulo de Pedidos →</a>
           </div>
+
+          @if (repuestos().length === 0) {
+            <p class="text-sm text-slate-500">Sin repuestos pedidos.</p>
+          } @else {
+            <div class="space-y-2">
+              @for (rep of repuestos(); track rep.id) {
+                <div class="border border-slate-200 rounded-lg p-3 text-sm flex justify-between items-center">
+                  <div>
+                    <p class="font-medium text-slate-800">{{ rep.nombreRepuesto }}</p>
+                    <p class="text-slate-500">Pedido: {{ rep.fechaSolicitud | slice:0:16 }} · S/ {{ rep.precio ?? '—' }}</p>
+                  </div>
+                  <span
+                    class="text-xs font-medium px-2 py-1 rounded-full"
+                    [class.bg-green-100]="rep.instalado"
+                    [class.text-green-700]="rep.instalado"
+                    [class.bg-amber-100]="!rep.instalado"
+                    [class.text-amber-700]="!rep.instalado"
+                  >
+                    {{ rep.instalado ? 'Instalado' : 'Pendiente' }}
+                  </span>
+                </div>
+              }
+            </div>
+          }
         </div>
 
       </div>
 
-      <!-- Columna Derecha: Panel de Acción y Flujos -->
+      <!-- Columna derecha -->
       <div class="space-y-6">
-        
-        <!-- Cambiar Estado y Controles del Workflow -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
-          <h2 class="font-bold text-slate-900 text-sm">Flujo de Trabajo</h2>
+
+        <!-- Cambiar estado -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h2 class="font-semibold text-slate-800 mb-4">Estado del proceso</h2>
 
           @if (procesoDetenido) {
-            <div class="bg-emerald-50 border border-emerald-150 rounded-xl p-4 text-center space-y-1">
-              <p class="text-emerald-800 font-bold text-xs flex items-center justify-center gap-1.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" /></svg>
-                <span>Proceso Cerrado</span>
-              </p>
-              <p class="text-[10px] text-emerald-600 font-medium">El equipo ha sido reparado y entregado al cliente con éxito.</p>
+            <div class="bg-black-50 rounded-lg p-4 text-center">
+              <p class="text-black-700 font-medium text-sm">Proceso finalizado</p>
+              <p class="text-black-600 text-xs mt-1">Esta orden fue entregada y su historial está cerrado.</p>
             </div>
-          } @else if (estadosValidos().length === 0) {
-            <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center space-y-1">
-              <p class="text-slate-700 font-bold text-xs flex items-center justify-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <span>Espera de Operación Externa</span>
-              </p>
-              <p class="text-[10px] text-slate-500">Se requiere completar la llegada/instalación de repuestos o el retorno del laboratorio externo para avanzar la orden.</p>
+          } @else if (estadosValidos().length === 0 && accionesDisponibles.length === 0) {
+            <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 text-center">
+              <p class="text-slate-600 text-sm">Esperando una acción en otro módulo</p>
+              <p class="text-slate-400 text-xs mt-1">(Pedidos o Envíos) para continuar el proceso.</p>
             </div>
           } @else {
-            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Avanzar al Siguiente Estado:</p>
+            <p class="text-xs text-slate-500 mb-2">Siguiente paso del proceso:</p>
 
             @if (errorEstado()) {
-              <div class="text-red-750 text-[10px] font-semibold bg-red-50 border border-red-100 rounded-lg px-2.5 py-1.5 mt-1.5 flex items-start gap-1">
-                <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                <span class="leading-relaxed">{{ errorEstado() }}</span>
-              </div>
+              <p class="text-red-600 text-xs mb-2">{{ errorEstado() }}</p>
             }
 
             <div class="space-y-2">
               @for (estado of estadosValidos(); track estado.id) {
-                
+
                 @if (orden()!.estadoActual.nombre === 'En espera de repuestos' && repuestosPendientesLlegada) {
-                  <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[10px] text-amber-700 font-medium">
-                    ⚠️ Debe confirmar la llegada de todos los repuestos pedidos antes de poder avanzar la reparación.
-                  </div>
+                  <p class="text-amber-600 text-xs mb-2">
+                    ⚠️ Confirma la llegada de todos los repuestos para continuar a {{ estado.nombre }}.
+                  </p>
                 }
 
                 @if (orden()!.estadoActual.nombre === 'En reparación' && estado.nombre === 'Reparación finalizada' && repuestosPendientesInstalar) {
-                  <div class="p-3 bg-amber-50 border border-amber-100 rounded-xl text-[10px] text-amber-700 font-medium">
-                    ⚠️ Confirma que los repuestos han sido "Instalados" en el dispositivo para poder finalizar.
-                  </div>
+                  <p class="text-amber-600 text-xs mb-2">
+                    ⚠️ Marca los repuestos como "Instalados" en el módulo de Pedidos para poder entregar el equipo.
+                  </p>
                 }
 
                 <button
@@ -375,34 +165,35 @@
                   [disabled]="cambiandoEstado() || 
                              (orden()!.estadoActual.nombre === 'En espera de repuestos' && repuestosPendientesLlegada) ||
                              (orden()!.estadoActual.nombre === 'En reparación' && estado.nombre === 'Reparación finalizada' && repuestosPendientesInstalar)"
-                  class="w-full inline-flex items-center justify-center bg-navy-900 hover:bg-navy-950 disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-semibold py-2.5 rounded-xl transition-all shadow-md shadow-navy-800/10 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
+                  class="w-full bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-sm font-medium py-2.5 rounded-lg transition"
                 >
-                  @if (cambiandoEstado()) {
-                    <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mr-2"></span>
-                    <span>Procesando...</span>
-                  } @else {
-                    <span>Avanzar a: {{ estado.nombre }}</span>
-                  }
+                  {{ cambiandoEstado() ? 'Actualizando...' : '→ ' + estado.nombre }}
+                </button>
+              }
+
+              <!-- Acciones que redirigen a otro módulo -->
+              @for (accion of accionesDisponibles; track accion.ruta) {
+                <button
+                  (click)="irAModulo(accion.ruta)"
+                  class="w-full bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-sm font-medium py-2.5 rounded-lg transition flex items-center justify-center gap-2"
+                >
+                  <span>↗</span> {{ accion.label }}
                 </button>
               }
             </div>
           }
         </div>
 
-        <!-- Historial / Auditoría de Estado -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
-          <h2 class="font-bold text-slate-900 text-sm">Historial del Servicio</h2>
-          
-          <div class="space-y-4 relative pl-3.5 before:absolute before:left-0.5 before:top-1.5 before:bottom-1.5 before:w-0.5 before:bg-slate-100">
+        <!-- Historial -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h2 class="font-semibold text-slate-800 mb-4">Historial</h2>
+          <div class="space-y-3">
             @for (item of historial(); track item.id) {
-              <div class="relative text-xs">
-                <!-- Punto en el eje vertical -->
-                <div class="absolute -left-[18px] top-1.5 w-2 h-2 rounded-full border border-white bg-brand-500 shadow-sm"></div>
-                
-                <p class="font-bold text-slate-800">{{ item.estado.nombre }}</p>
-                <p class="text-[10px] text-slate-400 mt-0.5">{{ item.fechaCambio | slice:0:16 }} · <span class="font-semibold text-slate-500">{{ item.usuario.persona.nombre }}</span></p>
+              <div class="border-l-2 border-blue-200 pl-3 text-sm">
+                <p class="font-medium text-slate-800">{{ item.estado.nombre }}</p>
+                <p class="text-slate-500 text-xs">{{ item.fechaCambio | slice:0:16 }} · {{ item.usuario.empleado.persona.nombre }}</p>
                 @if (item.comentario) {
-                  <p class="text-slate-650 bg-slate-50 border border-slate-150 rounded-lg p-2 mt-1.5 leading-relaxed">{{ item.comentario }}</p>
+                  <p class="text-slate-600 text-xs mt-1">{{ item.comentario }}</p>
                 }
               </div>
             }
@@ -412,85 +203,66 @@
       </div>
     </div>
 
-  @} @else {
-    <div class="bg-rose-50 border border-rose-100 rounded-2xl p-6 text-center">
-      <p class="text-rose-700 font-semibold text-sm">Error de carga</p>
-      <p class="text-rose-600 text-xs mt-1">No se pudo cargar la información de la orden especificada.</p>
-    </div>
+  } @else {
+    <p class="text-red-600">No se pudo cargar la orden.</p>
   }
 
-  <!-- MODAL DE COSTOS (Rediseñado estilo Stripe/Linear) -->
+  <!-- Modal de costo final -->
   @if (mostrarModalCosto()) {
-    <div class="fixed inset-0 bg-navy-950/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div class="bg-white rounded-2xl shadow-xl w-full max-w-md border border-slate-200/80 overflow-hidden animate-fade-in">
-        
-        <!-- Cabecera Modal -->
-        <div class="px-6 py-4 border-b border-slate-100">
-          <h3 class="font-bold text-slate-900 text-base">Cierre Financiero del Servicio</h3>
-          <p class="text-xs text-slate-400 mt-1">Ingresa el costo del trabajo mecánico realizado para liquidar la orden.</p>
-        </div>
+    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+        <h3 class="font-semibold text-slate-800 text-lg mb-1">Costo final del servicio</h3>
+        <p class="text-sm text-slate-500 mb-4">
+          Revisa el desglose e ingresa el costo de mano de obra para cerrar el presupuesto.
+        </p>
 
-        <!-- Desglose de Gastos -->
-        <div class="p-6 space-y-4 text-xs">
-          <div class="bg-slate-50/50 border border-slate-200/80 rounded-xl p-4 space-y-2.5">
-            <div class="flex justify-between items-center">
-              <span class="text-slate-500 font-medium">Costo Repuestos</span>
-              <span class="font-mono font-semibold text-slate-800">S/ {{ totalRepuestos().toFixed(2) }}</span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-slate-500 font-medium">Costo Envíos Externos</span>
-              <span class="font-mono font-semibold text-slate-800">S/ {{ totalEnvios().toFixed(2) }}</span>
-            </div>
-            
-            <div class="flex justify-between items-center pt-2.5 border-t border-slate-200/60">
-              <span class="text-slate-700 font-semibold">Mano de Obra / Honorarios</span>
-              <div class="relative max-w-[130px]">
-                <span class="absolute inset-y-0 left-3 flex items-center text-slate-400 font-semibold pointer-events-none">S/</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  [ngModel]="costoManoObraInput()"
-                  (ngModelChange)="costoManoObraInput.set($event)"
-                  placeholder="0.00"
-                  class="w-full text-right bg-white border border-slate-250 rounded-lg pl-8 pr-3 py-1.5 font-mono text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500/10 focus:border-brand-500"
-                />
-              </div>
-            </div>
-            
-            <div class="flex justify-between items-center pt-3 border-t border-slate-200 font-bold text-sm">
-              <span class="text-slate-850">Costo Total Final</span>
-              <span class="font-mono text-brand-650">S/ {{ totalEstimadoModal().toFixed(2) }}</span>
-            </div>
+        <div class="bg-slate-50 rounded-lg p-4 text-sm space-y-2 mb-4">
+          <div class="flex justify-between">
+            <span class="text-slate-500">Repuestos</span>
+            <span class="font-medium text-slate-800">S/ {{ totalRepuestos().toFixed(2) }}</span>
           </div>
-
-          @if (errorModal()) {
-            <p class="text-red-750 font-semibold text-[10px] bg-red-50 border border-red-100 rounded-lg p-2">{{ errorModal() }}</p>
-          }
+          <div class="flex justify-between">
+            <span class="text-slate-500">Envíos externos</span>
+            <span class="font-medium text-slate-800">S/ {{ totalEnvios().toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+            <span class="text-slate-600">Mano de obra</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              [ngModel]="costoManoObraInput()"
+              (ngModelChange)="costoManoObraInput.set($event)"
+              placeholder="0.00"
+              class="w-28 text-right border border-slate-300 rounded px-2 py-1 text-sm"
+            />
+          </div>
+          <div class="flex justify-between pt-2 border-t border-slate-200 font-semibold">
+            <span class="text-slate-700">Total</span>
+            <span class="text-slate-900">S/ {{ totalEstimadoModal().toFixed(2) }}</span>
+          </div>
         </div>
 
-        <!-- Acciones del Modal -->
-        <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center gap-3">
+        @if (errorModal()) {
+          <p class="text-red-600 text-xs mb-3">{{ errorModal() }}</p>
+        }
+
+        <div class="flex gap-2">
           <button
             (click)="cerrarModalCosto()"
             [disabled]="cambiandoEstado()"
-            class="flex-1 border border-slate-250 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold py-2.5 rounded-xl cursor-pointer disabled:opacity-40"
+            class="flex-1 border border-slate-300 text-slate-700 text-sm font-medium py-2.5 rounded-lg hover:bg-slate-50"
           >
             Cancelar
           </button>
           <button
             (click)="confirmarCostoYAvanzar()"
             [disabled]="cambiandoEstado()"
-            class="flex-1 bg-brand-600 hover:bg-brand-700 disabled:bg-slate-200 text-white text-xs font-semibold py-2.5 rounded-xl shadow-md shadow-brand-500/10 cursor-pointer disabled:cursor-not-allowed border-0 outline-none"
+            class="flex-1 bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white text-sm font-medium py-2.5 rounded-lg"
           >
-            @if (cambiandoEstado()) {
-              <span class="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent mx-auto"></span>
-            } @else {
-              <span>Confirmar y Entregar</span>
-            }
+            {{ cambiandoEstado() ? 'Guardando...' : 'Confirmar y avanzar' }}
           </button>
         </div>
-
       </div>
     </div>
   }

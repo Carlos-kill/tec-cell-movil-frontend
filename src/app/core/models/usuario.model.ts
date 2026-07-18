@@ -1,35 +1,17 @@
-export type Rol = 'ADMINISTRADOR' | 'TECNICO';
-
-export interface Persona {
-  id: number;
-  dni: string;
-  nombre: string;
-  apellidoPaterno: string;
-  apellidoMaterno?: string;
-  telefono?: string;
-  correo?: string;
-  direccion?: string;
-  estado: boolean;
-  feccre: string;
-}
+import { Empleado } from './empleado.model';
 
 export interface Usuario {
   id: number;
-  persona: Persona;
+  empleado: Empleado;
   usuario: string;
-  rol: Rol;
+  rol: 'ADMINISTRADOR' | 'TECNICO';
   estado: boolean;
   fechaCreacion: string;
 }
 
 export interface CrearUsuarioRequest {
   dni: string;
-  nombre: string;
-  apellidoPaterno: string;
-  apellidoMaterno?: string;
-  telefono?: string;
-  correo?: string;
   usuario: string;
   password: string;
-  rol: Rol;
+  rol: 'ADMINISTRADOR' | 'TECNICO';
 }

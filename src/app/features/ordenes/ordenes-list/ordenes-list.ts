@@ -63,6 +63,6 @@ export class OrdenesList implements OnInit {
   }
 
   nombreTecnico(orden: OrdenTrabajo): string {
-    return orden.tecnicoAsignado.persona.nombre;
+    return orden.tecnicoAsignado.empleado.persona.nombre;
   }
 }

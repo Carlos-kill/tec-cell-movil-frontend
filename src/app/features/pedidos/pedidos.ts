@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { RepuestoService } from '../../core/services/repuesto.service';
 import { OrdenService } from '../../core/services/orden.service';
 import { CatalogoService } from '../../core/services/catalogo.service';
@@ -24,6 +24,8 @@ export class Pedidos implements OnInit {
   private ordenService = inject(OrdenService);
   private catalogoService = inject(CatalogoService);
   private authService = inject(AuthService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   pedidos = signal<PedidoRepuesto[]>([]);
   proveedores = signal<Proveedor[]>([]);
@@ -39,6 +41,14 @@ export class Pedidos implements OnInit {
   errorBusquedaOrden = signal('');
   guardando = signal(false);
   errorMensaje = signal('');
+  mostrarModalLlegada = signal(false);
+  pedidoParaLlegada = signal<PedidoRepuesto | null>(null);
+  guardandoLlegada = signal(false);
+  errorLlegada = signal('');
+  mostrarModalInstalado = signal(false);
+  pedidoParaInstalado = signal<PedidoRepuesto | null>(null);
+  guardandoInstalado = signal(false);
+  errorInstalado = signal('');
 
   form = this.fb.group({
     proveedorId: [null as number | null, Validators.required],
@@ -51,6 +61,13 @@ export class Pedidos implements OnInit {
     this.catalogoService.listarProveedores().subscribe(p => this.proveedores.set(p));
     this.catalogoService.listarEstadosOrden().subscribe(e => this.estados.set(e));
     this.cargarPedidos();
+
+    this.route.queryParamMap.subscribe(params => {
+      const ordenId = params.get('ordenId');
+      if (ordenId) {
+        this.abrirPanelConOrden(Number(ordenId));
+      }
+    });
   }
 
   cargarPedidos(): void {
@@ -65,12 +82,19 @@ export class Pedidos implements OnInit {
   }
 
   get pedidosFiltrados(): PedidoRepuesto[] {
-    if (!this.textoBusqueda) return this.pedidos();
-    const texto = this.textoBusqueda.toLowerCase();
-    return this.pedidos().filter(p =>
-      p.nombreRepuesto.toLowerCase().includes(texto) ||
-      p.proveedor?.nombre.toLowerCase().includes(texto) ||
-      p.orden?.codigoUnico.toLowerCase().includes(texto)
+    let lista = this.pedidos();
+
+    if (this.textoBusqueda) {
+      const texto = this.textoBusqueda.toLowerCase();
+      lista = lista.filter(p =>
+        p.nombreRepuesto.toLowerCase().includes(texto) ||
+        p.proveedor?.nombre.toLowerCase().includes(texto) ||
+        p.orden?.codigoUnico.toLowerCase().includes(texto)
+      );
+    }
+
+    return [...lista].sort((a, b) =>
+      new Date(b.fechaSolicitud).getTime() - new Date(a.fechaSolicitud).getTime()
     );
   }
 
@@ -87,6 +111,33 @@ export class Pedidos implements OnInit {
     });
   }
 
+  abrirPanelConOrden(ordenId: number): void {
+    this.mostrarPanel.set(true);
+    this.codigoOrden = '';
+    this.ordenEncontrada.set(null);
+    this.errorBusquedaOrden.set('');
+    this.errorMensaje.set('');
+    this.form.reset();
+    this.buscandoOrden.set(true);
+
+    this.ordenService.obtener(ordenId).subscribe({
+      next: (orden) => {
+        this.ordenEncontrada.set(orden);
+        this.codigoOrden = orden.codigoUnico;
+        this.buscandoOrden.set(false);
+        this.router.navigate([], { relativeTo: this.route, queryParams: {}, replaceUrl: true });
+      },
+      error: () => {
+        this.errorBusquedaOrden.set('No se pudo cargar la orden seleccionada.');
+        this.buscandoOrden.set(false);
+      },
+    });
+
+    this.ordenService.listar({ size: 10 }).subscribe(respuesta => {
+      this.ordenesRecientes.set(respuesta.content.filter(o => !o.estadoActual.esEstadoFinal));
+    });
+  }
+
   cerrarPanel(): void {
     this.mostrarPanel.set(false);
   }
@@ -97,7 +148,6 @@ export class Pedidos implements OnInit {
     return this.ordenesRecientes().filter(o => o.codigoUnico.toLowerCase().includes(texto));
   }
 
-  // Se llama al pasar el mouse o seleccionar una fila: actualiza la vista previa en vivo
   previsualizar(orden: OrdenTrabajo): void {
     this.ordenEncontrada.set(orden);
   }
@@ -147,40 +197,70 @@ export class Pedidos implements OnInit {
     });
   }
 
-  marcarInstalado(pedido: PedidoRepuesto, event: Event): void {
-    event.preventDefault();
-    if (!confirm('¿Confirmas que este repuesto ya fue instalado? Una vez marcado, no se podrá deshacer.')) {
-      return;
-    }
+  abrirModalLlegada(pedido: PedidoRepuesto): void {
+    this.pedidoParaLlegada.set(pedido);
+    this.errorLlegada.set('');
+    this.mostrarModalLlegada.set(true);
+  }
+
+  cerrarModalLlegada(): void {
+    this.mostrarModalLlegada.set(false);
+    this.pedidoParaLlegada.set(null);
+  }
+
+  confirmarLlegadaModal(): void {
+    const pedido = this.pedidoParaLlegada();
     const usuarioId = this.authService.getUsuarioId();
-    if (!usuarioId) return;
+    if (!pedido || !usuarioId) return;
+
+    this.guardandoLlegada.set(true);
+    this.errorLlegada.set('');
+
+    this.repuestoService.confirmarLlegada(pedido.id, usuarioId).subscribe({
+      next: () => {
+        this.guardandoLlegada.set(false);
+        this.mostrarModalLlegada.set(false);
+        this.cargarPedidos();
+      },
+      error: (err) => {
+        this.guardandoLlegada.set(false);
+        this.errorLlegada.set(err.error?.error ?? 'Error al confirmar la llegada');
+      },
+    });
+  }
+
+  abrirModalInstalado(pedido: PedidoRepuesto): void {
+    this.pedidoParaInstalado.set(pedido);
+    this.errorInstalado.set('');
+    this.mostrarModalInstalado.set(true);
+  }
+
+  cerrarModalInstalado(): void {
+    this.mostrarModalInstalado.set(false);
+    this.pedidoParaInstalado.set(null);
+  }
+
+  confirmarInstaladoModal(): void {
+    const pedido = this.pedidoParaInstalado();
+    const usuarioId = this.authService.getUsuarioId();
+    if (!pedido || !usuarioId) return;
+
+    this.guardandoInstalado.set(true);
+    this.errorInstalado.set('');
+
     this.repuestoService.marcarInstalado(pedido.id, true, usuarioId).subscribe({
       next: () => {
+        this.guardandoInstalado.set(false);
+        this.mostrarModalInstalado.set(false);
         this.cargarPedidos();
         if (pedido.orden) {
           this.avanzarOrdenTrasRepuesto(pedido.orden.id);
         }
       },
       error: (err) => {
-        console.error('Error al instalar:', err);
-        alert(err.error?.error || 'Error de conexión al marcar como instalado.');
-      }
-    });
-  }
-
-  marcarLlegada(pedido: PedidoRepuesto): void {
-    if (!confirm('¿Confirmas que este repuesto ya llegó al local?')) return;
-    const usuarioId = this.authService.getUsuarioId();
-    if (!usuarioId) return;
-    
-    this.repuestoService.confirmarLlegada(pedido.id, usuarioId).subscribe({
-      next: () => {
-        this.cargarPedidos();
+        this.guardandoInstalado.set(false);
+        this.errorInstalado.set(err.error?.error ?? 'Error al marcar como instalado');
       },
-      error: (err) => {
-        console.error('Error al confirmar llegada:', err);
-        alert(err.error?.error || 'Error de conexión');
-      }
     });
   }
 
@@ -192,7 +272,7 @@ export class Pedidos implements OnInit {
     this.ordenService.cambiarEstado(ordenId, estadoReparacion.id, usuarioId, 'Repuesto recibido, continúa reparación')
       .subscribe({
         next: () => {},
-        error: () => {}, // transición no válida en este momento — se ignora silenciosamente
+        error: () => {},
       });
   }
 }

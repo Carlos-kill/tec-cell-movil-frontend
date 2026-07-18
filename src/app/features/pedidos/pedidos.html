@@ -115,7 +115,7 @@
                 <td class="px-6 py-4">
                   @if (!pedido.fechaLlegada) {
                     <button
-                      (click)="marcarLlegada(pedido)"
+                      (click)="abrirModalLlegada(pedido)"
                       class="inline-flex items-center justify-center bg-amber-50 hover:bg-amber-100 text-amber-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-amber-200/60 transition-all cursor-pointer"
                     >
                       Confirmar Llegada
@@ -130,7 +130,7 @@
                           type="checkbox" 
                           [checked]="pedido.instalado" 
                           [disabled]="pedido.instalado" 
-                          (click)="marcarInstalado(pedido, $event)" 
+                          (click)="$event.preventDefault(); abrirModalInstalado(pedido)" 
                           class="w-3.5 h-3.5 text-brand-600 border-slate-300 rounded focus:ring-brand-500/20 disabled:opacity-55 cursor-pointer disabled:cursor-not-allowed"
                         />
                         <span
@@ -364,9 +364,9 @@
                 <p class="text-slate-400 font-medium">Técnico Asignado</p>
                 <div class="flex items-center space-x-2 mt-1">
                   <div class="w-5 h-5 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-[9px] text-slate-500">
-                    {{ ordenEncontrada()!.tecnicoAsignado.persona.nombre.split(' ')[0][0] }}
+                    {{ ordenEncontrada()!.tecnicoAsignado.empleado.persona.nombre.split(' ')[0][0] }}
                   </div>
-                  <span class="font-semibold text-slate-700">{{ ordenEncontrada()!.tecnicoAsignado.persona.nombre }} {{ ordenEncontrada()!.tecnicoAsignado.persona.apellidoPaterno }}</span>
+                  <span class="font-semibold text-slate-700">{{ ordenEncontrada()!.tecnicoAsignado.empleado.persona.nombre }} {{ ordenEncontrada()!.tecnicoAsignado.empleado.persona.apellidoPaterno }}</span>
                 </div>
               </div>
 
@@ -377,6 +377,76 @@
             </div>
           </div>
         }
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Confirmar llegada -->
+  @if (mostrarModalLlegada()) {
+    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+        <h3 class="font-semibold text-slate-800 text-lg mb-1">Confirmar llegada</h3>
+        <p class="text-sm text-slate-500 mb-4">
+          ¿Confirmas que <span class="font-semibold text-slate-700">{{ pedidoParaLlegada()?.nombreRepuesto }}</span>
+          (orden <span class="font-mono font-semibold text-brand-650">{{ pedidoParaLlegada()?.orden?.codigoUnico }}</span>)
+          ya llegó al local?
+        </p>
+
+        @if (errorLlegada()) {
+          <p class="text-red-600 text-xs mb-3">{{ errorLlegada() }}</p>
+        }
+
+        <div class="flex gap-2">
+          <button
+            (click)="cerrarModalLlegada()"
+            [disabled]="guardandoLlegada()"
+            class="flex-1 border border-slate-300 text-slate-700 text-sm font-medium py-2.5 rounded-lg hover:bg-slate-50"
+          >
+            Cancelar
+          </button>
+          <button
+            (click)="confirmarLlegadaModal()"
+            [disabled]="guardandoLlegada()"
+            class="flex-1 bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white text-sm font-medium py-2.5 rounded-lg"
+          >
+            {{ guardandoLlegada() ? 'Guardando...' : 'Confirmar llegada' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal: Marcar instalado -->
+  @if (mostrarModalInstalado()) {
+    <div class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+        <h3 class="font-semibold text-slate-800 text-lg mb-1">Marcar como instalado</h3>
+        <p class="text-sm text-slate-500 mb-4">
+          ¿Confirmas que <span class="font-semibold text-slate-700">{{ pedidoParaInstalado()?.nombreRepuesto }}</span>
+          ya fue instalado en la orden <span class="font-mono font-semibold text-brand-650">{{ pedidoParaInstalado()?.orden?.codigoUnico }}</span>?
+          Una vez marcado, no se podrá deshacer.
+        </p>
+
+        @if (errorInstalado()) {
+          <p class="text-red-600 text-xs mb-3">{{ errorInstalado() }}</p>
+        }
+
+        <div class="flex gap-2">
+          <button
+            (click)="cerrarModalInstalado()"
+            [disabled]="guardandoInstalado()"
+            class="flex-1 border border-slate-300 text-slate-700 text-sm font-medium py-2.5 rounded-lg hover:bg-slate-50"
+          >
+            Cancelar
+          </button>
+          <button
+            (click)="confirmarInstaladoModal()"
+            [disabled]="guardandoInstalado()"
+            class="flex-1 bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white text-sm font-medium py-2.5 rounded-lg"
+          >
+            {{ guardandoInstalado() ? 'Guardando...' : 'Confirmar instalación' }}
+          </button>
+        </div>
       </div>
     </div>
   }

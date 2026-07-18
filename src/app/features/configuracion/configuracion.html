@@ -70,30 +70,46 @@
         </div>
         <div class="divide-y divide-slate-100">
           @for (tipo of tiposEquipo(); track tipo.id) {
-            <div class="flex justify-between items-center px-6 py-3.5 text-xs">
-              <div class="flex items-center space-x-3">
-                <span 
-                  class="w-2 h-2 rounded-full" 
-                  [class.bg-emerald-500]="tipo.activo" 
-                  [class.bg-slate-350]="!tipo.activo"
-                ></span>
-                <span class="font-semibold" [class.text-slate-800]="tipo.activo" [class.text-slate-400]="!tipo.activo">
-                  {{ tipo.nombre }}
-                </span>
+            @if (editandoTipoId() === tipo.id) {
+              <div class="flex gap-2 items-center px-6 py-3.5">
+                <input
+                  [(ngModel)]="editNombreTipo"
+                  class="flex-1 rounded-lg border border-slate-200/80 px-3 py-1.5 text-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500"
+                />
+                <button (click)="guardarEdicionTipo(tipo)" class="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-brand-600 text-white cursor-pointer">Guardar</button>
+                <button (click)="cancelarEdicionTipo()" class="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 text-slate-600 cursor-pointer">Cancelar</button>
               </div>
-              <button 
-                (click)="toggleTipoEquipo(tipo)" 
-                class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
-                [class.bg-rose-50]="tipo.activo"
-                [class.text-rose-700]="tipo.activo"
-                [class.border-rose-100]="tipo.activo"
-                [class.bg-brand-50]="!tipo.activo"
-                [class.text-brand-700]="!tipo.activo"
-                [class.border-brand-100]="!tipo.activo"
-              >
-                {{ tipo.activo ? 'Desactivar' : 'Activar' }}
-              </button>
-            </div>
+            } @else {
+              <div class="flex justify-between items-center px-6 py-3.5 text-xs">
+                <div class="flex items-center space-x-3">
+                  <span
+                    class="w-2 h-2 rounded-full"
+                    [class.bg-emerald-500]="tipo.activo"
+                    [class.bg-slate-350]="!tipo.activo"
+                  ></span>
+                  <span class="font-semibold" [class.text-slate-800]="tipo.activo" [class.text-slate-400]="!tipo.activo">
+                    {{ tipo.nombre }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button (click)="iniciarEdicionTipo(tipo)" class="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 cursor-pointer">
+                    Editar
+                  </button>
+                  <button
+                    (click)="toggleTipoEquipo(tipo)"
+                    class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
+                    [class.bg-rose-50]="tipo.activo"
+                    [class.text-rose-700]="tipo.activo"
+                    [class.border-rose-100]="tipo.activo"
+                    [class.bg-brand-50]="!tipo.activo"
+                    [class.text-brand-700]="!tipo.activo"
+                    [class.border-brand-100]="!tipo.activo"
+                  >
+                    {{ tipo.activo ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </div>
+              </div>
+            }
           }
         </div>
       </div>
@@ -103,59 +119,56 @@
   <!-- PESTAÑA: ESTADOS DE ORDEN -->
   @if (pestanaActiva() === 'estados') {
     <div class="space-y-5">
-      <!-- Agregar Nuevo Estado -->
-      <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4">
-        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Registrar Nuevo Estado de Orden</h3>
-        <div class="flex flex-col sm:flex-row gap-3">
-          <input 
-            [(ngModel)]="nuevoNombre" 
-            placeholder="Nombre del estado (Ej. Diagnóstico finalizado)" 
-            class="flex-1 rounded-xl border border-slate-200/80 bg-slate-55 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all" 
-          />
-          <input 
-            [(ngModel)]="nuevoOrdenVisual" 
-            type="number" 
-            placeholder="Orden" 
-            class="w-full sm:w-28 rounded-xl border border-slate-200/80 bg-slate-55 px-3.5 py-2.5 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all font-mono" 
-          />
-          <button 
-            (click)="agregarEstadoOrden()" 
-            class="bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-6 py-2.5 rounded-xl transition-all cursor-pointer border-0 outline-none whitespace-nowrap"
-          >
-            Agregar Estado
-          </button>
-        </div>
-      </div>
-
       <!-- Listado -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/10 flex items-center justify-between">
           <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estados de Orden del Proceso</p>
         </div>
         <div class="divide-y divide-slate-100">
           @for (estado of estadosOrden(); track estado.id) {
-            <div class="flex justify-between items-center px-6 py-3.5 text-xs">
-              <div class="flex items-center space-x-3">
-                <span class="font-mono text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200/60 rounded px-1.5 py-0.5">
-                  Fase {{ estado.ordenVisual }}
-                </span>
-                <span class="font-semibold" [class.text-slate-800]="estado.activo" [class.text-slate-400]="!estado.activo">
-                  {{ estado.nombre }}
-                </span>
+            @if (editandoEstadoId() === estado.id) {
+              <div class="flex gap-2 items-center px-6 py-3.5">
+                <input
+                  [(ngModel)]="editNombreEstado"
+                  class="flex-1 rounded-lg border border-slate-200/80 px-3 py-1.5 text-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500"
+                />
+                <input
+                  [(ngModel)]="editOrdenVisualEstado"
+                  type="number"
+                  class="w-20 rounded-lg border border-slate-200/80 px-3 py-1.5 text-xs font-mono focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500"
+                />
+                <button (click)="guardarEdicionEstado(estado)" class="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-brand-600 text-white cursor-pointer">Guardar</button>
+                <button (click)="cancelarEdicionEstado()" class="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 text-slate-600 cursor-pointer">Cancelar</button>
               </div>
-              <button 
-                (click)="toggleEstadoOrden(estado)" 
-                class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
-                [class.bg-rose-50]="estado.activo"
-                [class.text-rose-700]="estado.activo"
-                [class.border-rose-100]="estado.activo"
-                [class.bg-brand-50]="!estado.activo"
-                [class.text-brand-700]="!estado.activo"
-                [class.border-brand-100]="!estado.activo"
-              >
-                {{ estado.activo ? 'Desactivar' : 'Activar' }}
-              </button>
-            </div>
+            } @else {
+              <div class="flex justify-between items-center px-6 py-3.5 text-xs">
+                <div class="flex items-center space-x-3">
+                  <span class="font-mono text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200/60 rounded px-1.5 py-0.5">
+                    Fase {{ estado.ordenVisual }}
+                  </span>
+                  <span class="font-semibold" [class.text-slate-800]="estado.activo" [class.text-slate-400]="!estado.activo">
+                    {{ estado.nombre }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button (click)="iniciarEdicionEstado(estado)" class="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 cursor-pointer">
+                    Editar
+                  </button>
+                  <button
+                    (click)="toggleEstadoOrden(estado)"
+                    class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
+                    [class.bg-rose-50]="estado.activo"
+                    [class.text-rose-700]="estado.activo"
+                    [class.border-rose-100]="estado.activo"
+                    [class.bg-brand-50]="!estado.activo"
+                    [class.text-brand-700]="!estado.activo"
+                    [class.border-brand-100]="!estado.activo"
+                  >
+                    {{ estado.activo ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </div>
+              </div>
+            }
           }
         </div>
       </div>
@@ -203,37 +216,54 @@
         </div>
         <div class="divide-y divide-slate-100">
           @for (prov of proveedores(); track prov.id) {
-            <div class="flex justify-between items-center px-6 py-3.5 text-xs">
-              <div class="flex items-center space-x-3">
-                <span 
-                  class="w-2 h-2 rounded-full" 
-                  [class.bg-emerald-500]="prov.activo" 
-                  [class.bg-slate-350]="!prov.activo"
-                ></span>
-                <div>
-                  <span class="font-bold block" [class.text-slate-800]="prov.activo" [class.text-slate-400]="!prov.activo">
-                    {{ prov.nombre }}
-                  </span>
-                  @if (prov.contacto || prov.telefono) {
-                    <span class="text-[10px] text-slate-500 block mt-0.5 font-medium">
-                      Contacto: {{ prov.contacto || '—' }} · Tlf: {{ prov.telefono || '—' }}
-                    </span>
-                  }
+            @if (editandoProveedorId() === prov.id) {
+              <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center px-6 py-3.5">
+                <input [(ngModel)]="editNombreProveedor" placeholder="Nombre" class="flex-1 rounded-lg border border-slate-200/80 px-3 py-1.5 text-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500" />
+                <input [(ngModel)]="editContactoProveedor" placeholder="Contacto" class="flex-1 rounded-lg border border-slate-200/80 px-3 py-1.5 text-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500" />
+                <input [(ngModel)]="editTelefonoProveedor" placeholder="Teléfono" class="flex-1 rounded-lg border border-slate-200/80 px-3 py-1.5 text-xs focus:outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500" />
+                <div class="flex gap-2">
+                  <button (click)="guardarEdicionProveedor(prov)" class="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-brand-600 text-white cursor-pointer">Guardar</button>
+                  <button (click)="cancelarEdicionProveedor()" class="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 text-slate-600 cursor-pointer">Cancelar</button>
                 </div>
               </div>
-              <button 
-                (click)="toggleProveedor(prov)" 
-                class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
-                [class.bg-rose-50]="prov.activo"
-                [class.text-rose-700]="prov.activo"
-                [class.border-rose-100]="prov.activo"
-                [class.bg-brand-50]="!prov.activo"
-                [class.text-brand-700]="!prov.activo"
-                [class.border-brand-100]="!prov.activo"
-              >
-                {{ prov.activo ? 'Desactivar' : 'Activar' }}
-              </button>
-            </div>
+            } @else {
+              <div class="flex justify-between items-center px-6 py-3.5 text-xs">
+                <div class="flex items-center space-x-3">
+                  <span
+                    class="w-2 h-2 rounded-full"
+                    [class.bg-emerald-500]="prov.activo"
+                    [class.bg-slate-350]="!prov.activo"
+                  ></span>
+                  <div>
+                    <span class="font-bold block" [class.text-slate-800]="prov.activo" [class.text-slate-400]="!prov.activo">
+                      {{ prov.nombre }}
+                    </span>
+                    @if (prov.contacto || prov.telefono) {
+                      <span class="text-[10px] text-slate-500 block mt-0.5 font-medium">
+                        Contacto: {{ prov.contacto || '—' }} · Tlf: {{ prov.telefono || '—' }}
+                      </span>
+                    }
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button (click)="iniciarEdicionProveedor(prov)" class="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 cursor-pointer">
+                    Editar
+                  </button>
+                  <button
+                    (click)="toggleProveedor(prov)"
+                    class="px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer"
+                    [class.bg-rose-50]="prov.activo"
+                    [class.text-rose-700]="prov.activo"
+                    [class.border-rose-100]="prov.activo"
+                    [class.bg-brand-50]="!prov.activo"
+                    [class.text-brand-700]="!prov.activo"
+                    [class.border-brand-100]="!prov.activo"
+                  >
+                    {{ prov.activo ? 'Desactivar' : 'Activar' }}
+                  </button>
+                </div>
+              </div>
+            }
           }
         </div>
       </div>

@@ -20,6 +20,7 @@ export class Clientes implements OnInit {
   guardando = signal(false);
   errorMensaje = signal('');
   textoBusqueda = '';
+  editandoId = signal<number | null>(null);
 
   form = this.fb.group({
     dni: ['', [Validators.required, Validators.minLength(8)]],
@@ -46,12 +47,30 @@ export class Clientes implements OnInit {
     });
   }
 
+  abrirEditar(cliente: Cliente): void {
+    this.editandoId.set(cliente.id);
+    this.form.patchValue({
+      dni: cliente.persona.dni,
+      nombre: cliente.persona.nombre,
+      apellidoPaterno: cliente.persona.apellidoPaterno,
+      apellidoMaterno: cliente.persona.apellidoMaterno ?? '',
+      telefono: cliente.persona.telefono ?? '',
+      correo: cliente.persona.correo ?? '',
+      direccion: cliente.persona.direccion ?? '',
+    });
+    this.form.get('dni')?.disable();
+    this.errorMensaje.set('');
+    this.mostrarFormulario.set(true);
+  }
+
   onBuscar(): void {
     this.cargarClientes();
   }
 
   abrirFormulario(): void {
+    this.editandoId.set(null);
     this.form.reset();
+    this.form.get('dni')?.enable();
     this.errorMensaje.set('');
     this.mostrarFormulario.set(true);
   }
@@ -66,7 +85,12 @@ export class Clientes implements OnInit {
     this.guardando.set(true);
     this.errorMensaje.set('');
 
-    this.clienteService.crear(this.form.value as any).subscribe({
+    const id = this.editandoId();
+    const peticion = id
+      ? this.clienteService.actualizar(id, this.form.getRawValue())
+      : this.clienteService.crear(this.form.value as any);
+
+    peticion.subscribe({
       next: () => {
         this.guardando.set(false);
         this.mostrarFormulario.set(false);
@@ -74,7 +98,7 @@ export class Clientes implements OnInit {
       },
       error: (err) => {
         this.guardando.set(false);
-        this.errorMensaje.set(err.error?.error ?? 'Error al crear el cliente');
+        this.errorMensaje.set(err.error?.error ?? 'Error al guardar el cliente');
       },
     });
   }
